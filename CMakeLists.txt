@@ -1,0 +1,98 @@
+# CMake project to build DPI parsers on different platforms.
+
+cmake_minimum_required(VERSION 2.8)
+
+project(zwave2mqtt)
+
+## Default directories ##
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(SRC_TEST_DIR "${CMAKE_SOURCE_DIR}/test")
+
+set(SRCS
+   ${SRC_DIR}/node_value.cpp
+   ${SRC_DIR}/command_classes.cpp
+   ${SRC_DIR}/mqtt.cpp
+)
+
+set(SRCS_TESTS
+   ${SRC_TEST_DIR}/test_mqtt.cpp
+   ${SRC_TEST_DIR}/test_node.cpp
+   ${SRC_TEST_DIR}/test_value.cpp
+   ${SRC_TEST_DIR}/mock_manager.cpp
+   ${SRC_TEST_DIR}/mock_mosquitto.cpp
+)
+
+set(CMAKE_MACOSX_RPATH 1)
+
+## In case of GNU CPP compiler - check version before
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+    message(FATAL_ERROR "ZWave to MQTT requires at least gcc-4.8")
+endif()
+
+## pthreads ##
+find_package(Threads REQUIRED)
+
+## google test
+find_package(GTest)
+
+# openzwave library
+find_library(OPENZWAVE_LIB NAMES libopenzwave.so libopenzwave.dylib)
+if(NOT OPENZWAVE_LIB)
+  message(FATAL_ERROR "open_zwave library not found.")
+endif()
+
+# openzwave headers
+find_path(OPENZWAVE_INCLUDES openzwave/Manager.h)
+if(NOT OPENZWAVE_INCLUDES)
+  message(FATAL_ERROR "open_zwave library headers not found")
+endif()
+
+# mosquitto library
+find_library(MOSQUITTO_LIB NAMES libmosquitto.so libmosquitto.dylib)
+if(NOT MOSQUITTO_LIB)
+  message(FATAL_ERROR "mosquitto library not found.")
+endif()
+
+# mosquitto headers
+find_path(MOSQUITTO_INCLUDES mosquitto.h)
+if(NOT MOSQUITTO_INCLUDES)
+  message(FATAL_ERROR "mosquitto library headers not found")
+endif()
+
+message(STATUS "OpenZwave Includes:  ${OPENZWAVE_INCLUDES}")
+message(STATUS "OpenZwave Libraries: ${OPENZWAVE_LIB}")
+message(STATUS "Mosquitto Includes:  ${MOSQUITTO_INCLUDES}")
+message(STATUS "Mosquitto Libraries: ${MOSQUITTO_LIB}")
+message(STATUS "GTest Includes:      ${GTEST_INCLUDE_DIRS}")
+message(STATUS "GTest Libraries:     ${GTEST_BOTH_LIBRARIES}")
+message(STATUS "C++ compiler:        ${CMAKE_CXX_COMPILER}")
+
+## global include directories ##
+
+include_directories(${SRC_DIR})
+include_directories(${OPENZWAVE_INCLUDES} ${OPENZWAVE_INCLUDES}/openzwave)
+include_directories(${MOSQUITTO_INCLUDES})
+
+# Common CPP flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++0x -Wall -Wreturn-type -fvisibility=hidden")
+
+
+## Main application ##
+
+add_executable(ozw-mqtt ${SRCS} ${SRC_DIR}/ozw-mqtt.cpp)
+target_link_libraries(ozw-mqtt ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
+
+# Legacy
+# set(TEST_EXE test_app)
+# add_executable(${TEST_EXE} test.cpp command_class.cpp)
+# target_link_libraries(${TEST_EXE} ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
+
+## Unit testing
+if (GTEST_FOUND)
+  message(STATUS "Testing enabled")
+  enable_testing()
+  add_executable(tests ${SRCS} ${SRCS_TESTS})
+  target_link_libraries(tests ${GTEST_BOTH_LIBRARIES})
+  add_test(Tests tests)
+  add_custom_target(check COMMAND tests)
+endif()
