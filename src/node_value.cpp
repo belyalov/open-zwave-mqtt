@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <openzwave/Manager.h>
 #include "node_value.h"
 

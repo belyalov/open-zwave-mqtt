@@ -51,7 +51,6 @@ make_value_path(const string& prefix, const OpenZWave::ValueID& v)
     name_path += "/" + OpenZWave::Manager::Get()->GetValueLabel(v);
     id_path += "/" + to_string(v.GetIndex());
 
-    printf("\n%s\n%s\n", name_path.c_str(), id_path.c_str());
     return make_pair(name_path, id_path);
 }
 

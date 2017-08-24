@@ -3,6 +3,7 @@
 #define NODE_VALUE_H
 
 #include <string>
+#include <memory>
 #include <openzwave/Manager.h>
 
 

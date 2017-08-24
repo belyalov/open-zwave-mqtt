@@ -104,7 +104,7 @@ TEST_F(mqtt_tests, subscribe_readonly)
     }
 
     // there should be no subscriptions - all values are readonly
-    ASSERT_EQ((std::map<std::string, const OpenZWave::ValueID>){}, mqtt_get_endpoints());
+    ASSERT_TRUE(mqtt_get_endpoints().empty());
 }
 
 TEST_F(mqtt_tests, prefix)

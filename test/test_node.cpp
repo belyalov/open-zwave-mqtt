@@ -25,7 +25,7 @@ TEST_F(node_tests, create)
     // Successful add
     // home_id, node_id
     shared_ptr<const node> n = node_add(1, 2);
-    ASSERT_TRUE(n);
+    ASSERT_TRUE(n != NULL);
     ASSERT_EQ(1, n->home_id);
     ASSERT_EQ(2, n->id);
     ASSERT_EQ("name_h1_n2", n->name);
@@ -46,7 +46,7 @@ TEST_F(node_tests, find)
 
     // Positive case
     shared_ptr<const node> n1 = node_find_by_id(6);
-    ASSERT_TRUE(n1);
+    ASSERT_TRUE(n1 != NULL);
     ASSERT_EQ("name_h5_n6", n1->name);
 
     // Negative - no such node
@@ -61,7 +61,7 @@ TEST_F(node_tests, delete)
     node_add(11, 33);
 
     // Check n delete
-    ASSERT_TRUE(node_find_by_id(22));
+    ASSERT_TRUE(node_find_by_id(22) != NULL);
     node_remove_by_id(22);
 
     // Check again
