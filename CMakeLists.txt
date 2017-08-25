@@ -24,15 +24,15 @@ set(SRCS_TESTS
 
 set(CMAKE_MACOSX_RPATH 1)
 
-## In case of GNU CPP compiler - check version before
+# In case of GNU CPP compiler - check version before
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-    message(FATAL_ERROR "ZWave to MQTT requires at least gcc-4.8")
+    message(FATAL_ERROR "ZWave-MQTT requires at least gcc-4.8")
 endif()
 
-## pthreads ##
+# pthreads
 find_package(Threads REQUIRED)
 
-## google test
+# google test
 find_package(GTest)
 
 # openzwave library
@@ -67,7 +67,7 @@ message(STATUS "GTest Includes:      ${GTEST_INCLUDE_DIRS}")
 message(STATUS "GTest Libraries:     ${GTEST_BOTH_LIBRARIES}")
 message(STATUS "C++ compiler:        ${CMAKE_CXX_COMPILER}")
 
-## global include directories ##
+# global include directories
 
 include_directories(${SRC_DIR})
 include_directories(${OPENZWAVE_INCLUDES} ${OPENZWAVE_INCLUDES}/openzwave)
@@ -77,7 +77,7 @@ include_directories(${MOSQUITTO_INCLUDES})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++0x -Wall -Wreturn-type -fvisibility=hidden")
 
 
-## Main application ##
+# Main application
 
 add_executable(ozw-mqtt ${SRCS} ${SRC_DIR}/ozw-mqtt.cpp)
 target_link_libraries(ozw-mqtt ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
@@ -87,7 +87,7 @@ target_link_libraries(ozw-mqtt ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQ
 # add_executable(${TEST_EXE} test.cpp command_class.cpp)
 # target_link_libraries(${TEST_EXE} ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
 
-## Unit testing
+# Unit testing
 if (GTEST_FOUND)
   message(STATUS "Testing enabled")
   enable_testing()
