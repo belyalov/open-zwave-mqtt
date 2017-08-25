@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include "options.h"
 
 using namespace std;
@@ -35,7 +36,7 @@ options::options():
 bool
 options::parse_argv(int argc, const char* argv[])
 {
-    for (size_t i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         string k(argv[i]);
         // for convience replace _ with -
         std::replace(k.begin(), k.end(), '_', '-');
