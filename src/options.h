@@ -1,0 +1,21 @@
+
+#include <string>
+#include <map>
+
+struct options {
+    options();
+
+    bool parse_argv(int argc, const char* argv[]);
+
+    std::string openzwave_config;
+    std::string device;
+    std::string mqtt_host;
+    std::string mqtt_client_id;
+    std::string mqtt_user;
+    std::string mqtt_passwd;
+    std::string mqtt_prefix;
+    uint16_t mqtt_port;
+    bool debug;
+};
+
+void print_help();

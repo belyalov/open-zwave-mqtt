@@ -3,35 +3,31 @@
 #include "process_notification.h"
 #include "node_value.h"
 #include "mqtt.h"
+#include "options.h"
 
 using namespace OpenZWave;
 
 void
 process_notification(const Notification* n, void* ctx)
 {
-    // Node1 is always controller, so, ignore it
-    // if (n->GetNodeId() == 1) {
-    //     return;
-    // }
+    options *opts = static_cast<options*> (ctx);
 
     switch(n->GetType()) {
         case Notification::Type_DriverReady:
         {
-            // home_id = n->GetHomeId();
-            // printf("HomeID is %x\n", home_id);
+            printf("HomeID is %x\n", n->GetHomeId());
             break;
         }
 
         case Notification::Type_DriverFailed:
         {
-            printf("Failed to initialize driver.\n");
+            printf("Failed to initialize OpenZWave.\n");
             exit(1);
             break;
         }
 
         case Notification::Type_NodeAdded:
         {
-            // printf("nid=%d hid=%x\n", n->GetNodeId(), n->GetHomeId());
             node_add(n->GetHomeId(), n->GetNodeId());
             break;
         }
@@ -44,8 +40,8 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_ValueAdded:
         {
-            // value_add(n->GetValueID());
-            // mqtt_subscribe("", n->GetValueID());
+            value_add(n->GetValueID());
+            mqtt_subscribe(opts->mqtt_prefix, n->GetValueID());
             break;
         }
 
@@ -63,7 +59,7 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_ValueChanged:
         {
-            mqtt_publish("", n->GetValueID());
+            mqtt_publish(opts->mqtt_prefix, n->GetValueID());
             break;
         }
 

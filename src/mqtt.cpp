@@ -23,7 +23,7 @@ mqtt_connect(const string& client_id, const string& host, const uint16_t port)
     mqtt_client = mosquitto_new(client_id.c_str(), true, 0);
 
     // Connect to broker
-    int res = mosquitto_connect(mqtt_client, "192.168.1.1", 1883, 60);
+    int res = mosquitto_connect(mqtt_client, host.c_str(), port, 60);
     if (res != 0) {
         printf("Unable to connect to MQTT broker\n");
         exit(1);
