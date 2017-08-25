@@ -1,4 +1,5 @@
 
+#include <unistd.h>
 #include <mosquitto.h>
 #include <openzwave/Manager.h>
 #include "mqtt.h"
@@ -14,10 +15,35 @@ mosquitto* mqtt_client = NULL;
 
 // Create MQTT client connect
 void
-mqtt_connect(const std::string& host, const uint16_t port)
+mqtt_connect(const string& client_id, const string& host, const uint16_t port)
 {
+    // Init MQTT library - mosquitto
+    mosquitto_lib_init();
+    // Create MQTT client: id - openzwave, clean session
+    mqtt_client = mosquitto_new(client_id.c_str(), true, 0);
+
+    // Connect to broker
+    int res = mosquitto_connect(mqtt_client, "192.168.1.1", 1883, 60);
+    if (res != 0) {
+        printf("Unable to connect to MQTT broker\n");
+        exit(1);
+    }
 
 }
+
+void mqtt_loop()
+{
+    while (1) {
+        int res = mosquitto_loop(mqtt_client, -1, 1);
+        if(res){
+            printf("connection lost, reconnecting.\n");
+            sleep(1);
+            mosquitto_reconnect(mqtt_client);
+        }
+        // sleep(1);
+    }
+}
+
 
 // Make string from OpenZwave value
 pair<string, string>
@@ -25,6 +51,7 @@ make_value_path(const string& prefix, const OpenZWave::ValueID& v)
 {
     auto n = node_find_by_id(v.GetNodeId());
     if (!n) {
+        return make_pair("11112", "11123");
         throw invalid_argument("Node not found");
     }
 
@@ -101,7 +128,7 @@ mqtt_publish(const string& prefix, const OpenZWave::ValueID& v)
     if (res != 0) {
         printf("Error while publishing message to MQTT topic %s\n", topics.first.c_str());
     } else {
-        printf("PUBLISH: %s -> %s\n", topics.first.c_str(), value.c_str());
+        // printf("PUBLISH: %s -> %s\n", topics.first.c_str(), value.c_str());
     }
 
     res = mosquitto_publish(mqtt_client, NULL, topics.second.c_str(),
@@ -109,7 +136,7 @@ mqtt_publish(const string& prefix, const OpenZWave::ValueID& v)
     if (res != 0) {
         printf("Error while publishing message to MQTT topic %s\n", topics.second.c_str());
     } else {
-        printf("PUBLISH: %s -> %s\n", topics.second.c_str(), value.c_str());
+        // printf("PUBLISH: %s -> %s\n", topics.second.c_str(), value.c_str());
     }
 }
 

@@ -8,6 +8,35 @@ vector<string> subscribe_history;
 vector<pair<string, string> > publish_history;
 
 int
+mosquitto_lib_init()
+{
+    return 0;
+}
+
+struct mosquitto*
+mosquitto_new(const char *id, bool clean_session, void *userdata)
+{
+    return (struct mosquitto*)&subscribe_history;
+}
+
+int
+mosquitto_connect(struct mosquitto *mosq, const char *host, int port, int keepalive)
+{
+    return 0;
+}
+
+int mosquitto_reconnect(struct mosquitto *mosq)
+{
+    return 0;
+}
+
+int
+mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
+{
+    return 0;
+}
+
+int
 mosquitto_subscribe(struct mosquitto *mosq, int *mid, const char *sub, int qos)
 {
     subscribe_history.push_back(sub);

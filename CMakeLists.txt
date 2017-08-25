@@ -12,6 +12,7 @@ set(SRCS
    ${SRC_DIR}/node_value.cpp
    ${SRC_DIR}/command_classes.cpp
    ${SRC_DIR}/mqtt.cpp
+   ${SRC_DIR}/process_notification.cpp
 )
 
 set(SRCS_TESTS

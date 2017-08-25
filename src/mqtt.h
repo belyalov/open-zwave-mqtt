@@ -5,7 +5,8 @@
 #include "node_value.h"
 
 
-void mqtt_connect(const std::string&, const uint16_t port);
+void mqtt_connect(const std::string&, const std::string&, const uint16_t port);
+void mqtt_loop();
 
 void mqtt_subscribe(const std::string&, const OpenZWave::ValueID&);
 void mqtt_publish(const std::string&, const OpenZWave::ValueID&);

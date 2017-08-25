@@ -8,7 +8,7 @@
 
 
 struct node {
-    node(uint8_t _hid, uint32_t _id): home_id(_hid), id(_id) {};
+    node(uint32_t _hid, uint8_t _id): home_id(_hid), id(_id) {};
 
     const uint32_t home_id;
     const uint8_t  id;
@@ -22,7 +22,7 @@ struct node {
     std::vector<OpenZWave::ValueID> values;
 };
 
-std::shared_ptr<const node> node_add(const uint8_t node_id, const uint32_t home_id);
+std::shared_ptr<const node> node_add(const uint32_t home_id, const uint8_t node_id);
 std::shared_ptr<const node> node_find_by_id(const uint8_t id);
 void                        node_remove_by_id(const uint8_t id);
 void                        node_remove_all();

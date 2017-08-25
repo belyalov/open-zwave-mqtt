@@ -10,11 +10,12 @@ map<uint8_t, shared_ptr<node> > nodes_by_id;
 // Nodes //
 
 std::shared_ptr<const node>
-node_add(const uint8_t home_id, const uint32_t node_id)
+node_add(const uint32_t home_id, const uint8_t node_id)
 {
     // Check for already existing nodes
     if (nodes_by_id.find(node_id) != nodes_by_id.end()) {
-        throw invalid_argument("Node already exists");
+        // LOG: warning, node already exists
+        return nodes_by_id[node_id];
     }
 
     OpenZWave::Manager *mng = OpenZWave::Manager::Get();
@@ -83,7 +84,7 @@ value_add(const OpenZWave::ValueID& v)
     auto it = nodes_by_id.find(v.GetNodeId());
 
     if (it == nodes_by_id.end()) {
-        throw invalid_argument("Node not found");
+        throw invalid_argument("Node not found" + to_string(v.GetNodeId()));
     }
 
     it->second->values.push_back(v);
@@ -95,7 +96,7 @@ value_remove(const OpenZWave::ValueID& v)
     auto it = nodes_by_id.find(v.GetNodeId());
 
     if (it == nodes_by_id.end()) {
-        throw invalid_argument("Node not found");
+        throw invalid_argument("Node not found2");
     }
 
     auto& vals = it->second->values;
