@@ -84,7 +84,7 @@ value_add(const OpenZWave::ValueID& v)
     auto it = nodes_by_id.find(v.GetNodeId());
 
     if (it == nodes_by_id.end()) {
-        throw invalid_argument("Node not found" + to_string(v.GetNodeId()));
+        throw invalid_argument("Node not found");
     }
 
     it->second->values.push_back(v);
@@ -96,7 +96,7 @@ value_remove(const OpenZWave::ValueID& v)
     auto it = nodes_by_id.find(v.GetNodeId());
 
     if (it == nodes_by_id.end()) {
-        throw invalid_argument("Node not found2");
+        throw invalid_argument("Node not found");
     }
 
     auto& vals = it->second->values;

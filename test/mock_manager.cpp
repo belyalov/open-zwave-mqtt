@@ -9,6 +9,7 @@ Manager* Manager::s_instance = NULL;
 map<uint8_t, string> node_new_names;
 set<uint64_t> readonly_values;
 map<uint64_t, string> value_labels;
+vector<pair<uint64_t, string> > set_value_history;
 
 // Blank constructor / destructor
 Manager::Manager(): m_notificationMutex((Mutex*) new int)
@@ -102,6 +103,27 @@ Manager::GetValueAsString(const ValueID& _id, string* o_value)
     return true;
 }
 
+bool
+Manager::SetValue(const ValueID& _id, const string& _value)
+{
+    set_value_history.push_back(make_pair(_id.GetId(), _value));
+    return true;
+}
+
+bool
+Manager::PressButton(const ValueID& _id)
+{
+    set_value_history.push_back(make_pair(_id.GetId(), ""));
+    return true;
+}
+
+bool
+Manager::ReleaseButton(const ValueID& _id)
+{
+    set_value_history.push_back(make_pair(_id.GetId(), ""));
+    return true;
+}
+
 void
 mock_manager_set_value_readonly(const OpenZWave::ValueID& v)
 {
@@ -114,12 +136,19 @@ mock_manager_set_value_label(const OpenZWave::ValueID& v, const string& label)
     value_labels[v.GetId()] = label;
 }
 
+const vector<pair<uint64_t, string> >
+mock_manager_get_value_set_history()
+{
+    return set_value_history;
+}
+
 void
 mock_manager_cleanup()
 {
     node_new_names.clear();
     readonly_values.clear();
     value_labels.clear();
+    set_value_history.clear();
 
     Manager::Destroy();
 }

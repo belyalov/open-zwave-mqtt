@@ -1,5 +1,4 @@
 
-#include <mosquitto.h>
 #include "mock_mosquitto.h"
 
 using namespace std;
@@ -23,6 +22,11 @@ int
 mosquitto_connect(struct mosquitto *mosq, const char *host, int port, int keepalive)
 {
     return 0;
+}
+
+void mosquitto_message_callback_set(struct mosquitto *mosq,
+        void (*on_message)(struct mosquitto *, void *, const struct mosquitto_message *))
+{
 }
 
 int mosquitto_reconnect(struct mosquitto *mosq)

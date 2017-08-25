@@ -9,6 +9,11 @@ using namespace std;
 using namespace OpenZWave;
 
 
+// Declared in mqtt.cpp, don't want to declare it in header just for unittests
+extern void
+mqtt_message_callback(struct mosquitto*, void*, const struct mosquitto_message*);
+
+
 class mqtt_tests: public ::testing::Test
 {
 protected:
@@ -81,28 +86,28 @@ TEST_F(mqtt_tests, subscribe)
     map<pair<string, string>, const ValueID> runs = {
         // regular value
         {
-            {"location_h1_n1/name_h1_n1/basic/label1", "1/32/1"},
+            {"location_h1_n1/name_h1_n1/basic/label1/set", "1/32/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int)
         },
         {
-            {"location_h1_n2/name_h1_n2/meter/label1", "2/50/1"},
+            {"location_h1_n2/name_h1_n2/meter/label1/set", "2/50/1/set"},
             ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int)
         },
         // multi instance
         {
-            {"location_h1_n1/name_h1_n1/switch_binary/1/label1", "1/37/1/1"},
+            {"location_h1_n1/name_h1_n1/switch_binary/1/label1/set", "1/37/1/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x25, 1, 1, ValueID::ValueType_Int)
         },
         {
-            {"location_h1_n1/name_h1_n1/switch_binary/2/label1", "1/37/2/1"},
+            {"location_h1_n1/name_h1_n1/switch_binary/2/label1/set", "1/37/2/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x25, 2, 1, ValueID::ValueType_Int)
         },
         {
-            {"location_h1_n1/name_h1_n1/switch_multilevel/1/label1", "1/38/1/1"},
+            {"location_h1_n1/name_h1_n1/switch_multilevel/1/label1/set", "1/38/1/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x26, 1, 1, ValueID::ValueType_Int)
         },
         {
-            {"location_h1_n1/name_h1_n1/switch_multilevel/2/label1", "1/38/2/1"},
+            {"location_h1_n1/name_h1_n1/switch_multilevel/2/label1/set", "1/38/2/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x26, 2, 1, ValueID::ValueType_Int)
         },
     };
@@ -123,11 +128,11 @@ TEST_F(mqtt_tests, subscribe_escape_value_label)
     // path -> ValueID
     map<pair<string, string>, pair<const ValueID, string> > runs = {
         {
-            {"location_h1_n1/name_h1_n1/basic/somelabel", "1/32/1"},
+            {"location_h1_n1/name_h1_n1/basic/somelabel/set", "1/32/1/set"},
             {ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int), "SoMeLAbeL"}
         },
         {
-            {"location_h1_n2/name_h1_n2/meter/_space_dash-_smth", "2/50/1"},
+            {"location_h1_n2/name_h1_n2/meter/_space_dash-_smth/set", "2/50/1/set"},
             {ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int), " space dash- SMTH"}
         },
     };
@@ -155,11 +160,11 @@ TEST_F(mqtt_tests, subscribe_readonly)
     // path -> (homeId, nodeId, genre, command_class, instance, index, type)
     map<pair<string, string>, const ValueID> runs = {
         {
-            {"location_h1_n1/name_h1_n1/basic/label1", "1/32/1"},
+            {"location_h1_n1/name_h1_n1/basic/label1/set", "1/32/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int)
         },
         {
-            {"location_h1_n2/name_h1_n2/meter/label1", "2/50/1"},
+            {"location_h1_n2/name_h1_n2/meter/label1/set", "2/50/1/set"},
             ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int)
         },
     };
@@ -181,11 +186,11 @@ TEST_F(mqtt_tests, prefix)
     // path -> (homeId, nodeId, genre, command_class, instance, index, type)
     map<pair<string, string>, const ValueID> runs = {
         {
-            {"prefix/location_h1_n1/name_h1_n1/basic/label1", "prefix/1/32/1"},
+            {"prefix/location_h1_n1/name_h1_n1/basic/label1/set", "prefix/1/32/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int)
         },
         {
-            {"prefix/location_h1_n1/name_h1_n1/switch_binary/1/label1", "prefix/1/37/1/1"},
+            {"prefix/location_h1_n1/name_h1_n1/switch_binary/1/label1/set", "prefix/1/37/1/1/set"},
             ValueID(1, 1, ValueID::ValueGenre_User, 0x25, 1, 1, ValueID::ValueType_Int)
         },
     };
@@ -230,3 +235,52 @@ TEST_F(mqtt_tests, publish)
 
     ASSERT_PUBLICATIONS(runs);
 }
+
+TEST_F(mqtt_tests, incoming_message)
+{
+    // mqtt_message_callback(struct mosquitto*, void*, const struct mosquitto_message*);
+    map<pair<string, string>, const ValueID> runs = {
+        {
+            {"location_h1_n1/name_h1_n1/basic/label1/set", "1/32/1/set"},
+            ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int)
+        },
+        {
+            {"location_h1_n2/name_h1_n2/meter/label1/set", "2/50/1/set"},
+            ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int)
+        },
+    };
+
+    // add values / subscribe to them
+    for (auto it = runs.begin(); it != runs.end(); ++it) {
+        value_add(it->second);
+        mqtt_subscribe("", it->second);
+    }
+
+    // Emulate mqtt message callback
+    for (auto it = runs.begin(); it != runs.end(); ++it) {
+        struct mosquitto_message m {};
+        // first, named topic
+        m.topic = (char*) it->first.first.c_str();
+        m.payload = (void*) "1";
+        m.payloadlen = 1;
+        mqtt_message_callback(NULL, NULL, &m);
+        // second, named topic
+        m.topic = (char*) it->first.second.c_str();
+        m.payload = (void*) "2";
+        m.payloadlen = 1;
+        mqtt_message_callback(NULL, NULL, &m);
+    }
+
+    // Check results
+    auto hist = mock_manager_get_value_set_history();
+    size_t idx = 0;
+    for (auto it = runs.begin(); it != runs.end(); ++it) {
+        // first topic
+        ASSERT_EQ(it->second.GetId(), hist[idx].first);
+        ASSERT_EQ("1", hist[idx++].second);
+        // second topic
+        ASSERT_EQ(it->second.GetId(), hist[idx].first);
+        ASSERT_EQ("2", hist[idx++].second);
+    }
+}
+
