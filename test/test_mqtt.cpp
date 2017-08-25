@@ -77,7 +77,7 @@ TEST_F(mqtt_tests, subscribe)
 {
     // path: prefix/node_location/node_name/command_class_name
     // path: prefix/node_id/command_class_id
-    // path -> (homeId, nodeId, genre, command_class, instance, index, type)
+    // path -> valueID
     map<pair<string, string>, const ValueID> runs = {
         // regular value
         {
@@ -114,6 +114,38 @@ TEST_F(mqtt_tests, subscribe)
 
     // check subscriptions
     ASSERT_SUBSCRIPTIONS(runs);
+}
+
+TEST_F(mqtt_tests, subscribe_escape_value_label)
+{
+    // path: prefix/node_location/node_name/command_class_name
+    // path: prefix/node_id/command_class_id
+    // path -> ValueID
+    map<pair<string, string>, pair<const ValueID, string> > runs = {
+        {
+            {"location_h1_n1/name_h1_n1/basic/somelabel", "1/32/1"},
+            {ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int), "SoMeLAbeL"}
+        },
+        {
+            {"location_h1_n2/name_h1_n2/meter/_space_dash-_smth", "2/50/1"},
+            {ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int), " space dash- SMTH"}
+        },
+    };
+
+    // subscribe
+    for (auto it = runs.begin(); it != runs.end(); ++it) {
+        // Set mock label value
+        mock_manager_set_value_label(it->second.first, it->second.second);
+        mqtt_subscribe("", it->second.first);
+    }
+
+    // Check history
+    auto hist = mock_mosquitto_subscribe_history();
+    size_t idx = 0;
+    for (auto it = runs.begin(); it != runs.end(); ++it) {
+        ASSERT_EQ(hist[idx++], it->first.first);
+        ASSERT_EQ(hist[idx++], it->first.second);
+    }
 }
 
 TEST_F(mqtt_tests, subscribe_readonly)

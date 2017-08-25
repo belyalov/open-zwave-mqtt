@@ -7,7 +7,8 @@ using namespace OpenZWave;
 
 Manager* Manager::s_instance = NULL;
 map<uint8_t, string> node_new_names;
-set<uint8_t> readonly_values;
+set<uint64_t> readonly_values;
+map<uint64_t, string> value_labels;
 
 // Blank constructor / destructor
 Manager::Manager(): m_notificationMutex((Mutex*) new int)
@@ -81,6 +82,9 @@ Manager::GetNodeProductType(const uint32_t hid, const uint8_t nid)
 string
 Manager::GetValueLabel(const OpenZWave::ValueID& v)
 {
+    if (value_labels.find(v.GetId()) != value_labels.end()) {
+        return value_labels[v.GetId()];
+    }
     return "label" + to_string(v.GetIndex());
 }
 
@@ -105,10 +109,17 @@ mock_manager_set_value_readonly(const OpenZWave::ValueID& v)
 }
 
 void
+mock_manager_set_value_label(const OpenZWave::ValueID& v, const string& label)
+{
+    value_labels[v.GetId()] = label;
+}
+
+void
 mock_manager_cleanup()
 {
     node_new_names.clear();
     readonly_values.clear();
+    value_labels.clear();
 
     Manager::Destroy();
 }

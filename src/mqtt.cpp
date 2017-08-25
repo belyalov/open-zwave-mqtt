@@ -75,7 +75,7 @@ make_value_path(const string& prefix, const OpenZWave::ValueID& v)
         name_path += "/" + to_string(v.GetInstance());
         id_path += "/" + to_string(v.GetInstance());
     }
-    name_path += "/" + OpenZWave::Manager::Get()->GetValueLabel(v);
+    name_path += "/" + value_escape_label(OpenZWave::Manager::Get()->GetValueLabel(v));
     id_path += "/" + to_string(v.GetIndex());
 
     return make_pair(name_path, id_path);
