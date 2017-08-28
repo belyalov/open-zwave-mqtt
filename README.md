@@ -1,4 +1,4 @@
-# open-zwave-mqtt
+# open-zwave-mqtt [![Build Status](https://travis-ci.org/belyalov/open-zwave-mqtt.svg?branch=master)](https://travis-ci.org/belyalov/open-zwave-mqtt)
 A bridge between ZWave and MQTT networks.
 This is a first, initial implementation. A lot of work needs to be done, however main functionality works well.
 ## Prerequisites
