@@ -1,0 +1,20 @@
+sudo: required
+language:
+  - cpp
+compiler:
+  -gcc
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y mosquitto
+
+install:
+  - git clone https://github.com/OpenZWave/open-zwave.git
+  - make -C open-zwave install
+
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ../
+  - make
+  - make test
