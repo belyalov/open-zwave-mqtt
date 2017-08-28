@@ -8,6 +8,7 @@ project(zwave2mqtt)
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 set(SRC_TEST_DIR "${CMAKE_SOURCE_DIR}/test")
 
+# App source files
 set(SRCS
    ${SRC_DIR}/node_value.cpp
    ${SRC_DIR}/command_classes.cpp
@@ -16,6 +17,7 @@ set(SRCS
    ${SRC_DIR}/options.cpp
 )
 
+# Tests source files
 set(SRCS_TESTS
    ${SRC_TEST_DIR}/mock_manager.cpp
    ${SRC_TEST_DIR}/mock_mosquitto.cpp
@@ -62,6 +64,14 @@ if(NOT MOSQUITTO_INCLUDES)
   message(FATAL_ERROR "mosquitto library headers not found")
 endif()
 
+# valgrind
+find_program(VALGRIND valgrind)
+if(NOT VALGRIND)
+    message(STATUS "Valgrind DISABLED: not installed")
+else()
+    message(STATUS "Valgrind ENABLED. (${VALGRIND})")
+endif()
+
 message(STATUS "OpenZwave Includes:  ${OPENZWAVE_INCLUDES}")
 message(STATUS "OpenZwave Libraries: ${OPENZWAVE_LIB}")
 message(STATUS "Mosquitto Includes:  ${MOSQUITTO_INCLUDES}")
@@ -79,23 +89,26 @@ include_directories(${MOSQUITTO_INCLUDES})
 # Common CPP flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++0x -Wall -Wreturn-type -fvisibility=hidden")
 
+# Compile app objects before making executables (otherwise - they'll be compiled twice)
+add_library(ozw-mqtt-objs OBJECT ${SRCS})
 
 # Main application
 
-add_executable(ozw-mqtt ${SRCS} ${SRC_DIR}/ozw-mqtt.cpp)
+add_executable(ozw-mqtt ${SRC_DIR}/ozw-mqtt.cpp $<TARGET_OBJECTS:ozw-mqtt-objs>)
 target_link_libraries(ozw-mqtt ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
-
-# Legacy
-# set(TEST_EXE test_app)
-# add_executable(${TEST_EXE} test.cpp command_class.cpp)
-# target_link_libraries(${TEST_EXE} ${CMAKE_THREAD_LIBS_INIT} ${OPENZWAVE_LIB} ${MOSQUITTO_LIB})
 
 # Unit testing
 if (GTEST_FOUND)
   message(STATUS "Testing enabled")
   enable_testing()
-  add_executable(tests ${SRCS} ${SRCS_TESTS})
+  add_executable(tests ${SRCS_TESTS} $<TARGET_OBJECTS:ozw-mqtt-objs>)
   target_link_libraries(tests ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  add_test(Tests tests)
+  # Test 1: Unittests
+  add_test(UnitTests tests)
+  # Test 2: Valgrind on Unittests, if available
+  if (VALGRIND)
+    add_test(Valgrind valgrind ./tests)
+  endif()
+  # To make run unittests easier
   add_custom_target(check COMMAND tests)
 endif()

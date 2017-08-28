@@ -25,4 +25,3 @@ script:
   - cmake .
   - make
   - make test
-  - valgrind ./tests

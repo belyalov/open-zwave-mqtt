@@ -4,7 +4,7 @@ This is a first, initial implementation. A lot of work needs to be done, however
 ## Prerequisites
 * CMake 2.8+
 * [OpenZwave library 1.5+](https://github.com/OpenZWave/open-zwave)
-* [Mosquitton (MQTT) library](https://github.com/eclipse/mosquitto)
+* [Mosquitto (MQTT) library](https://github.com/eclipse/mosquitto)
 * GCC 4.8+ or CLang
 ## Quick start
 ### Install dependecies
