@@ -1,0 +1,28 @@
+sudo: required
+language:
+  - cpp
+compiler:
+  -gcc
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libmosquitto0-dev libudev-dev valgrind
+
+install:
+  - mkdir distr && cd distr
+  - git clone https://github.com/OpenZWave/open-zwave.git
+  - sudo make -C open-zwave install
+  - git clone https://github.com/eclipse/mosquitto.git
+  - sudo make -C mosquitto WITH_SRV=no WITH_UUID=no WITH_DOCS=no install
+  - wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+  - tar xzf release-1.8.0.tar.gz
+  - cd googletest-release-1.8.0
+  - cmake .
+  - sudo make install
+  - cd "${TRAVIS_BUILD_DIR}"
+
+script:
+  - cmake .
+  - make
+  - make test
+  - valgrind ./tests
