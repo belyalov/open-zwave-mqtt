@@ -4,9 +4,14 @@ language:
 compiler:
   -gcc
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y mosquitto libudev-dev
+  - sudo apt-get install -y libmosquitto0-dev libudev-dev
 
 install:
   - git clone https://github.com/OpenZWave/open-zwave.git
