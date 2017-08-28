@@ -16,6 +16,8 @@ before_install:
 install:
   - git clone https://github.com/OpenZWave/open-zwave.git
   - sudo make -C open-zwave install
+  - git clone https://github.com/eclipse/mosquitto.git
+  - sudo make -C mosquitto WITH_SRV=no WITH_UUID=no WITH_DOCS=no install
 
 script:
   - mkdir -p build
