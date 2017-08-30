@@ -1,8 +1,10 @@
 sudo: required
 language:
   - cpp
+  - c
 compiler:
-  -gcc
+  - gcc
+  - clang
 
 before_install:
   - sudo apt-get -qq update
@@ -13,7 +15,8 @@ install:
   - git clone https://github.com/OpenZWave/open-zwave.git
   - sudo make -C open-zwave install
   - git clone https://github.com/eclipse/mosquitto.git
-  - sudo make -C mosquitto WITH_SRV=no WITH_UUID=no WITH_DOCS=no install
+  - make -C mosquitto WITH_SRV=no WITH_UUID=no WITH_DOCS=no
+  - sudo make -C mosquitto WITH_DOCS=no install
   - wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
   - tar xzf release-1.8.0.tar.gz
   - cd googletest-release-1.8.0
