@@ -1,0 +1,13 @@
+#!/bin/bash -ex
+
+if [ ! -z "$DEBUG" ]
+then
+    DEBUG=--debug
+fi
+
+/ozw-mqtt --mqtt-host "$MQTT_HOST" \
+          --mqtt-client-id "$MQTT_CLIENT_ID" \
+          --mqtt-prefix "$MQTT_PREFIX" \
+          --mqtt-user "$MQTT_USER" \
+          --mqtt-passwd "$MQTT_PASSWD" \
+          $DEBUG
