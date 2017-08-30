@@ -14,6 +14,7 @@ void print_help()
     printf("\t -d [--device]\t\t ZWave Device (default /dev/zwave)\n");
     printf("\t -c [--config]\t\t OpenZWave library config dir (default /usr/local/etc/openzwave)\n");
     printf("\t -h [--mqtt-host]\t MQTT Broker host to connect to (default localhost)\n");
+    printf("\t -p [--mqtt-port]\t MQTT Broker port (default 1883)\n");
     printf("\t -C [--mqtt-client-id]\t MQTT Client-ID (default ozw-mqtt)\n");
     printf("\t -C [--mqtt-prefix]\t Add prefix to all ZWave subscriptions / publications (default none)\n");
     printf("\t -u [--mqtt-user]\t MQTT Username (no default value)\n");
