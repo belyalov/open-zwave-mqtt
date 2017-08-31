@@ -1,0 +1,6 @@
+#!/bin/bash -ex
+
+# Replace / with \/
+SBASE=${BASE//\//\\\/}
+
+sed -i "1s/.*/FROM $SBASE/" Dockerfile
