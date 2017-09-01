@@ -39,6 +39,12 @@ Manager::Destroy()
     }
 }
 
+void
+Manager::WriteConfig(const uint32_t _homeId)
+{
+
+}
+
  // Node info mocks
 void
 Manager::SetNodeName(const uint32_t hid, const uint8_t nid, const string& name)

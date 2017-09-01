@@ -90,4 +90,16 @@ process_notification(const Notification* n, void* ctx)
         default:
             break;
     }
+
+    // Save configuration immediately when system config changed
+    switch(n->GetType()) {
+        case Notification::Type_NodeAdded:
+        case Notification::Type_NodeRemoved:
+        case Notification::Type_ValueAdded:
+        case Notification::Type_ValueRemoved:
+            Manager::Get()->WriteConfig(n->GetHomeId());
+            break;
+        default:
+            break;
+    }
 }

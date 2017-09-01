@@ -20,14 +20,19 @@ RUN apt-get -qq update && \
 # Copy run script
 COPY run_ozw-mqtt /
 
+# Variables to control the bridge
 ENV MQTT_HOST "test.mosquitto.org"
 ENV MQTT_PORT "1883"
 ENV MQTT_CLIENT_ID "ozw-mqtt"
-ENV MQTT_PREFIX "test"
+ENV MQTT_PREFIX ""
 ENV MQTT_USER ""
 ENV MQTT_PASSWD ""
+ENV DEVICE "/dev/zwave"
+ENV OZW_SYSTEM_CONFIG "/usr/local/etc/openzwave"
+ENV OZW_USER_CONFIG "/config"
 ENV DEBUG ""
 
-# port ??
+# User config (home config data)
+VOLUME /config
 
 ENTRYPOINT ["/run_ozw-mqtt"]

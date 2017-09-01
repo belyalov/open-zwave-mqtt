@@ -7,7 +7,8 @@ struct options {
 
     bool parse_argv(int argc, const char* argv[]);
 
-    std::string openzwave_config;
+    std::string system_config;
+    std::string user_config;
     std::string device;
     std::string mqtt_host;
     std::string mqtt_client_id;

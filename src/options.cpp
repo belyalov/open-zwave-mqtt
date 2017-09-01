@@ -9,23 +9,28 @@ void print_help()
     printf("\n");
     printf("OpenZwave to MQTT bridge.\n");
     printf("\n");
-    printf("Usage: ozw-mqtt [-d device] [-h MQTT host] [-c ozw_config] [...]\n");
+    printf("Usage: ozw-mqtt [-d device] [-h MQTT host] [...]\n");
     printf("\n");
+    printf("Common options:\n");
     printf("\t -d [--device]\t\t ZWave Device (default /dev/zwave)\n");
-    printf("\t -c [--config]\t\t OpenZWave library config dir (default /usr/local/etc/openzwave)\n");
+    printf("\t -c [--config]\t\t User configuration for OpenZWave library (default /usr/local/etc/openzwave)\n");
     printf("\t -h [--mqtt-host]\t MQTT Broker host to connect to (default localhost)\n");
-    printf("\t -p [--mqtt-port]\t MQTT Broker port (default 1883)\n");
-    printf("\t -C [--mqtt-client-id]\t MQTT Client-ID (default ozw-mqtt)\n");
-    printf("\t -C [--mqtt-prefix]\t Add prefix to all ZWave subscriptions / publications (default none)\n");
-    printf("\t -u [--mqtt-user]\t MQTT Username (no default value)\n");
-    printf("\t -P [--mqtt-passwd]\t MQTT Password (no default value)\n");
-    printf("\t -D [--debug]\t\t Enable debug logs (default off)\n");
-    printf("\t -H [--help]\t\t Print this message\n");
+    printf("\t -u [--mqtt-user]\t MQTT Username (default empty)\n");
+    printf("\t -p [--mqtt-passwd]\t MQTT Password (default empty)\n");
+    printf("\n");
+    printf("Other options:\n");
+    printf("\t --mqtt-port\t MQTT Broker port (default 1883)\n");
+    printf("\t --mqtt-client-id\t MQTT Client-ID (default ozw-mqtt)\n");
+    printf("\t --mqtt-prefix\t Add prefix to all ZWave subscriptions / publications (default empty)\n");
+    printf("\t --system-config\t\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
+    printf("\t --debug\t\t Enable debug logs (default off)\n");
+    printf("\t --help\t\t Print this message\n");
     printf("\n");
 }
 
 options::options():
-        openzwave_config("/usr/local/etc/openzwave"),
+        system_config("/usr/local/etc/openzwave"),
+        user_config("./"),
         device("/dev/zwave"),
         mqtt_host("127.0.0.1"),
         mqtt_client_id("ozw-mqtt"),
@@ -43,11 +48,11 @@ options::parse_argv(int argc, const char* argv[])
         std::replace(k.begin(), k.end(), '_', '-');
 
         // parameters without arguments
-        if (k == "-H" || k == "--help") {
+        if (k == "--help") {
             print_help();
             return false;
         }
-        if (k == "--debug" || k == "-D") {
+        if (k == "--debug") {
             debug = true;
             continue;
         }
@@ -64,21 +69,23 @@ options::parse_argv(int argc, const char* argv[])
             return false;
         }
 
-        if (k == "--config" || k == "-c") {
-            openzwave_config = v;
+        if (k == "--system-config") {
+            system_config = v;
+        } else if (k == "--config" || k == "-c") {
+            user_config = v;
         } else if (k == "--device" || k == "-d") {
             device = v;
         } else if (k == "--mqtt-host" || k =="-h") {
             mqtt_host = v;
-        } else if (k == "--mqtt-port" || k == "-p") {
+        } else if (k == "--mqtt-port") {
             mqtt_port = stoi(v);
-        } else if (k == "--mqtt-client-id" || k == "-C") {
+        } else if (k == "--mqtt-client-id") {
             mqtt_client_id = v;
         } else if (k == "--mqtt-prefix") {
             mqtt_prefix = v;
         } else if (k == "--mqtt-user" || k == "-u") {
             mqtt_user = v;
-        }  else if (k == "--mqtt-passwd" || k == "-P") {
+        }  else if (k == "--mqtt-passwd" || k == "-p") {
             mqtt_passwd = v;
         } else {
             printf("Unknown option '%s'\n", k.c_str());

@@ -5,7 +5,11 @@ then
     DEBUG=--debug
 fi
 
-/ozw-mqtt --mqtt-host "$MQTT_HOST" \
+/ozw-mqtt --device "$DEVICE" \
+          --config "$OZW_USER_CONFIG" \
+          --system-config "$OZW_SYSTEM_CONFIG" \
+          --mqtt-host "$MQTT_HOST" \
+          --mqtt-port "$MQTT_PORT" \
           --mqtt-client-id "$MQTT_CLIENT_ID" \
           --mqtt-prefix "$MQTT_PREFIX" \
           --mqtt-user "$MQTT_USER" \

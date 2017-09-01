@@ -17,7 +17,6 @@ using namespace OpenZWave;
 void
 signal_handler(int s)
 {
-    // Manager::Get()->WriteConfig(home_id);
     printf("Caught signal %d\n",s);
     exit(1);
 }
@@ -51,7 +50,7 @@ int main(int argc, const char* argv[])
     // The first argument is the path to the config files (where the manufacturer_specific.xml file is located
     // The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL
     // the log file will appear in the program's working directory.
-    Options::Create(opt.openzwave_config, "./", "./" );
+    Options::Create(opt.system_config, opt.user_config, "");
     if (opt.debug) {
         Options::Get()->AddOptionInt("SaveLogLevel", LogLevel_Debug);
         Options::Get()->AddOptionInt("QueueLogLevel", LogLevel_Debug);
