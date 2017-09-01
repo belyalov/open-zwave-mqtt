@@ -23,51 +23,25 @@ install:
 
 jobs:
   include:
-
-    - stage: Tests
+    - &test
+      stage: Tests
       compiler: gcc
       script:
         - cmake .
         - make all test
-    - stage: Tests
+    - <<: *test
       compiler: clang
-      script:
-        - cmake .
-        - make all test
 
-    - stage: Dockers
-      branches:
-        - master
+    - &stage
+      stage: Dockers
       env:
         - BASE=ubuntu
         - TAG=latest
       install: skip
-      script: skip
-      deploy:
-        provider: script
-        script:
-          - cd docker && ./fix_docker_file
-          - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-          - docker build -t arsenicus/open-zwave-mqtt:$TAG .
-          - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWD"
-          - docker push arsenicus/open-zwave-mqtt:$TAG
-        on:
-          branch: master
-    - stage: Dockers
-      branches:
-        - master
+      script: &dock
+        - cd docker
+        - ./build_docker
+    - <<: *stage
       env:
         - BASE=resin/odroid-xu4-debian
         - TAG=odroid-xu4
-      install: skip
-      script: skip
-      deploy:
-        provider: script
-        script:
-          - cd docker && ./fix_docker_file
-          - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-          - docker build -t arsenicus/open-zwave-mqtt:$TAG .
-          - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWD"
-          - docker push arsenicus/open-zwave-mqtt:$TAG
-        on:
-          branch: master

@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+# Build/publish dockers only when runs on master branch
+if [ "$TRAVIS_BRANCH" != "master" ]; then
+  echo "Current branch is '$TRAVIS_BRANCH', skip docker build"
+  exit 0
+fi
+
+# Fix Dockerfile with proper base image
+SBASE=${BASE//\//\\\/}
+sed -i "1s/.*/FROM $SBASE/" Dockerfile
+
+# Build
+docker run --rm --privileged multiarch/qemu-user-static:register --reset
+docker build -t arsenicus/open-zwave-mqtt:$TAG .
+
+# Publish, only for non PULL requests
+if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWD"
+    docker push arsenicus/open-zwave-mqtt:$TAG
+fi
