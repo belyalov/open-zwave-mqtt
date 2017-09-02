@@ -1,8 +1,11 @@
 
+#include <openzwave/platform/Log.h>
 #include <algorithm>
 #include "options.h"
 
 using namespace std;
+using namespace OpenZWave;
+
 
 void print_help()
 {
@@ -23,7 +26,7 @@ void print_help()
     printf("\t --mqtt-client-id\t MQTT Client-ID (default ozw-mqtt)\n");
     printf("\t --mqtt-prefix\t Add prefix to all ZWave subscriptions / publications (default empty)\n");
     printf("\t --system-config\t\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
-    printf("\t --debug\t\t Enable debug logs (default off)\n");
+    printf("\t --log-level\t\t Set log level (error, warninig, info, debug) (default info)\n");
     printf("\t --help\t\t Print this message\n");
     printf("\n");
 }
@@ -35,7 +38,7 @@ options::options():
         mqtt_host("127.0.0.1"),
         mqtt_client_id("ozw-mqtt"),
         mqtt_port(1883),
-        debug(false)
+        log_level(LogLevel_Info)
 {
 }
 
@@ -51,10 +54,6 @@ options::parse_argv(int argc, const char* argv[])
         if (k == "--help") {
             print_help();
             return false;
-        }
-        if (k == "--debug") {
-            debug = true;
-            continue;
         }
 
         // next parameters requires value
@@ -87,6 +86,16 @@ options::parse_argv(int argc, const char* argv[])
             mqtt_user = v;
         }  else if (k == "--mqtt-passwd" || k == "-p") {
             mqtt_passwd = v;
+        } else if (k == "--log-level") {
+            // error, warninig, info, debug
+            if (v == "error") log_level = LogLevel_Error;
+            else if (v == "warning") log_level = LogLevel_Warning;
+            else if (v == "info") log_level = LogLevel_Info;
+            else if (v == "debug") log_level = LogLevel_Debug;
+            else {
+                printf("Unknown log level '%s'.\n", v.c_str());
+                return false;
+            }
         } else {
             printf("Unknown option '%s'\n", k.c_str());
             return false;

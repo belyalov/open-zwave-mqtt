@@ -30,7 +30,7 @@ ENV MQTT_PASSWD ""
 ENV DEVICE "/dev/zwave"
 ENV OZW_SYSTEM_CONFIG "/usr/local/etc/openzwave"
 ENV OZW_USER_CONFIG "/config"
-ENV DEBUG ""
+ENV LOG_LEVEL "info"
 
 # User config (home config data)
 VOLUME /config

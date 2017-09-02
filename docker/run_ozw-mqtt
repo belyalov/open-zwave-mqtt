@@ -1,10 +1,5 @@
 #!/bin/bash -ex
 
-if [ ! -z "$DEBUG" ]
-then
-    DEBUG=--debug
-fi
-
 /ozw-mqtt --device "$DEVICE" \
           --config "$OZW_USER_CONFIG" \
           --system-config "$OZW_SYSTEM_CONFIG" \
@@ -14,4 +9,4 @@ fi
           --mqtt-prefix "$MQTT_PREFIX" \
           --mqtt-user "$MQTT_USER" \
           --mqtt-passwd "$MQTT_PASSWD" \
-          $DEBUG
+          --log-level "$LOG_LEVEL"

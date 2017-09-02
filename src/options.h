@@ -16,7 +16,7 @@ struct options {
     std::string mqtt_passwd;
     std::string mqtt_prefix;
     uint16_t mqtt_port;
-    bool debug;
+    uint32_t log_level;
 };
 
 void print_help();

@@ -58,13 +58,8 @@ int main(int argc, const char* argv[])
     // The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL
     // the log file will appear in the program's working directory.
     Options::Create(opt.system_config, opt.user_config, "");
-    if (opt.debug) {
-        Options::Get()->AddOptionInt("SaveLogLevel", LogLevel_Debug);
-        Options::Get()->AddOptionInt("QueueLogLevel", LogLevel_Debug);
-    } else {
-        Options::Get()->AddOptionInt("SaveLogLevel", LogLevel_Warning);
-        Options::Get()->AddOptionInt("QueueLogLevel", LogLevel_Warning);
-    }
+    Options::Get()->AddOptionInt("SaveLogLevel", opt.log_level);
+    Options::Get()->AddOptionInt("QueueLogLevel", opt.log_level);
     Options::Get()->AddOptionInt("DumpTrigger", LogLevel_Error);
     Options::Get()->Lock();
 
