@@ -21,6 +21,12 @@ signal_handler(int s)
     exit(1);
 }
 
+void
+save_config(const string& value)
+{
+    Manager::Get()->WriteConfig(home_id);
+    printf("OZW configuration saved.\n");
+}
 
 //-----------------------------------------------------------------------------
 // <main>
@@ -44,6 +50,7 @@ int main(int argc, const char* argv[])
     printf("Starting OpenZWave to MQTT bridge.\n");
 
     // Make a connection to MQTT broker
+    printf("Connecting to MQTT Broker %s:%d...", opt.mqtt_host.c_str(), opt.mqtt_port);
     mqtt_connect(opt.mqtt_client_id, opt.mqtt_host, opt.mqtt_port);
 
     // Create the OpenZWave Manager.
@@ -67,6 +74,9 @@ int main(int argc, const char* argv[])
     Manager::Get()->AddWatcher(process_notification, &opt);
     // Add a Z-Wave Driver
     Manager::Get()->AddDriver(opt.device);
+
+    // Register save config mqtt topic
+    mqtt_subscribe(opt.mqtt_prefix, "ozw/save_config", save_config);
 
     // Main loop
     mqtt_loop();

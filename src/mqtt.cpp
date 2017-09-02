@@ -10,6 +10,8 @@ using namespace std;
 
 // mapping between string and actual openzwave value
 map<string, const OpenZWave::ValueID> endpoints;
+// custom topic bindings
+map<string, mqtt_custom_topic_callback> endpoints_custom;
 
 // mosquitto mqtt client
 mosquitto* mqtt_client = NULL;
@@ -18,13 +20,21 @@ mosquitto* mqtt_client = NULL;
 void
 mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosquitto_message* msg)
 {
+    string topic = msg->topic;
+    string value(static_cast<const char*> (msg->payload), msg->payloadlen);
+
+    // Custom endpoints (topic -> function)
+    auto cit = endpoints_custom.find(topic);
+    if (cit != endpoints_custom.end()) {
+        cit->second(value);
+        return;
+    }
+
+    // For value based payloads - ignore messages with empty value
     if(!msg->payloadlen){
         // Ignore empty messages
         return;
     }
-
-    string topic = msg->topic;
-    string value(static_cast<const char*> (msg->payload), msg->payloadlen);
 
     auto it = endpoints.find(msg->topic);
     if (it == endpoints.end()) {
@@ -64,6 +74,7 @@ mqtt_connect(const string& client_id, const string& host, const uint16_t port)
         printf("Unable to connect to MQTT broker\n");
         exit(1);
     }
+    printf("Connected!\n");
 }
 
 void mqtt_loop()
@@ -178,6 +189,23 @@ mqtt_subscribe(const string& prefix, const OpenZWave::ValueID& v)
     endpoints.insert(make_pair(ep2, v));
 }
 
+// topic -> custom function subscriber
+void
+mqtt_subscribe(const string& pref, const string& topic, mqtt_custom_topic_callback cb)
+{
+    string top = pref;
+    if (!top.empty()) {
+        top += "/";
+    }
+    top += topic;
+
+    // subscribe to topic / add to map
+    int res = mosquitto_subscribe(mqtt_client, NULL, top.c_str(), 0);
+    if (res != 0) {
+        throw runtime_error("mosquitto_subscribe failed");
+    }
+    endpoints_custom.insert(make_pair(top, cb));
+}
 
 // Mostly for unittests
 
@@ -185,10 +213,17 @@ void
 mqtt_unsubscribe_all()
 {
     endpoints.clear();
+    endpoints_custom.clear();
 }
 
 const map<string, const OpenZWave::ValueID>&
 mqtt_get_endpoints()
 {
     return endpoints;
+}
+
+const map<string, mqtt_custom_topic_callback>
+mqtt_get_endpoints_custom()
+{
+    return endpoints_custom;
 }

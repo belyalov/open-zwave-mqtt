@@ -7,6 +7,9 @@
 
 using namespace OpenZWave;
 
+uint32_t home_id;
+bool publishing = false;
+
 void
 process_notification(const Notification* n, void* ctx)
 {
@@ -59,7 +62,9 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_ValueChanged:
         {
-            mqtt_publish(opts->mqtt_prefix, n->GetValueID());
+            if (publishing) {
+                mqtt_publish(opts->mqtt_prefix, n->GetValueID());
+            }
             break;
         }
 
@@ -71,7 +76,8 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_NodeQueriesComplete:
         {
-            // Log some message?
+            printf("Driver ready. Start publishing changed values to MQTT\n");
+            publishing = true;
             break;
         }
 
@@ -87,18 +93,6 @@ process_notification(const Notification* n, void* ctx)
             break;
         }
 
-        default:
-            break;
-    }
-
-    // Save configuration immediately when system config changed
-    switch(n->GetType()) {
-        case Notification::Type_NodeAdded:
-        case Notification::Type_NodeRemoved:
-        case Notification::Type_ValueAdded:
-        case Notification::Type_ValueRemoved:
-            Manager::Get()->WriteConfig(n->GetHomeId());
-            break;
         default:
             break;
     }

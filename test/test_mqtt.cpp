@@ -284,3 +284,48 @@ TEST_F(mqtt_tests, incoming_message)
     }
 }
 
+// Helper for custom subscriptions
+bool custom_called1 = false;
+bool custom_called2 = false;
+
+void
+custom_subscr_helper(const string& value)
+{
+    if (value == "1") {
+        custom_called1 = true;
+    } else {
+        custom_called2 = true;
+    }
+}
+
+
+TEST_F(mqtt_tests, subscribe_custom)
+{
+    // Make 2 subscriptions to custom topic / function
+    mqtt_subscribe("", "some/custom/topic", custom_subscr_helper);
+    mqtt_subscribe("pref", "some/custom/topic", custom_subscr_helper);
+
+    // check custom subscriptions
+    ASSERT_EQ(2, mqtt_get_endpoints_custom().size());
+
+    // Reset flags
+    custom_called1 = false;
+    custom_called2 = false;
+
+    // Emulate incoming message without prefix
+    struct mosquitto_message m {};
+    m.topic = (char*) "some/custom/topic";
+    m.payload = (void*) "1";
+    m.payloadlen = 1;
+    mqtt_message_callback(NULL, NULL, &m);
+
+    // Second one - with prefix
+    m.topic = (char*) "pref/some/custom/topic";
+    m.payload = (void*) "2";
+    // "Send" message
+    mqtt_message_callback(NULL, NULL, &m);
+
+    // Check flags
+    ASSERT_TRUE(custom_called1);
+    ASSERT_TRUE(custom_called2);
+}
