@@ -117,6 +117,7 @@ value_escape_label(const string& lbl)
     transform(res.begin(), res.end(), res.begin(), ::tolower);
     std::replace(res.begin(), res.end(), ' ', '_');
     std::replace(res.begin(), res.end(), '/', '_');
+    std::replace(res.begin(), res.end(), '+', '_');
 
     return res;
 }

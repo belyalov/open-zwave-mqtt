@@ -111,7 +111,10 @@ make_value_path(const string& prefix, const OpenZWave::ValueID& v)
         name_path += prefix + "/";
         id_path += prefix + "/";
     }
-    name_path += n->location + "/" + n->name + "/" + command_class_str(cmd_class);
+    if (!n->location.empty()) {
+        name_path += n->location + "/";
+    }
+    name_path += n->name + "/" + command_class_str(cmd_class);
     id_path += to_string(n->id) + "/" + to_string(cmd_class);
 
     // Several command types support multi instances (e.g. 2-relay binary switch), so, add instance as well

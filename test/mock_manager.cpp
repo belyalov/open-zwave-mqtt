@@ -7,6 +7,7 @@ using namespace OpenZWave;
 
 Manager* Manager::s_instance = NULL;
 map<uint8_t, string> node_new_names;
+map<uint8_t, string> node_new_locations;
 set<uint64_t> readonly_values;
 map<uint64_t, string> value_labels;
 vector<pair<uint64_t, string> > set_value_history;
@@ -52,11 +53,18 @@ Manager::SetNodeName(const uint32_t hid, const uint8_t nid, const string& name)
     node_new_names[nid] = name;
 }
 
+void
+Manager::SetNodeLocation(const uint32_t hid, const uint8_t nid, const string& name)
+{
+    node_new_locations[nid] = name;
+}
+
 string
 Manager::GetNodeName(const uint32_t hid, const uint8_t nid)
 {
-    if (node_new_names.find(nid) != node_new_names.end()) {
-        return node_new_names[nid];
+    auto it = node_new_names.find(nid);
+    if (it != node_new_names.end()) {
+        return it->second;
     }
 
     return "name_h" + to_string(hid) + "_n" + to_string(nid);
@@ -65,6 +73,11 @@ Manager::GetNodeName(const uint32_t hid, const uint8_t nid)
 string
 Manager::GetNodeLocation(const uint32_t hid, const uint8_t nid)
 {
+    auto it = node_new_locations.find(nid);
+    if (it != node_new_locations.end()) {
+        return it->second;
+    }
+
     return "location_h" + to_string(hid) + "_n" + to_string(nid);
 }
 
@@ -152,6 +165,7 @@ void
 mock_manager_cleanup()
 {
     node_new_names.clear();
+    node_new_locations.clear();
     readonly_values.clear();
     value_labels.clear();
     set_value_history.clear();

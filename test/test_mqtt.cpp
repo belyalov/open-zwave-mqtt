@@ -206,6 +206,10 @@ TEST_F(mqtt_tests, prefix)
 
 TEST_F(mqtt_tests, publish)
 {
+    // Override default generated location for node10
+    OpenZWave::Manager::Get()->SetNodeLocation(1, 10, "");
+    node_add(1, 10);
+
     // valueID -> (<topic1, topic2> -> payload)
     map<const ValueID, pair<string, string> > runs = {
         // regular value
@@ -216,6 +220,11 @@ TEST_F(mqtt_tests, publish)
         {
             ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int),
             {"location_h1_n2/name_h1_n2/meter/label1", "2/50/1"}
+        },
+        // empty location
+        {
+            ValueID(1, 10, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int),
+            {"name_h1_n10/basic/label1", "10/32/1"}
         },
         // multi instance
         {

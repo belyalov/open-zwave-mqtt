@@ -89,6 +89,7 @@ TEST(value_utils, value_escape)
         {"VALUE//BLAH", "value__blah"},
         {"value_blah", "value_blah"},
         {"value/blah", "value_blah"},
+        {"zwave+_version", "zwave__version"},
     };
 
     for (auto it = runs.begin(); it != runs.end(); ++it) {
