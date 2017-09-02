@@ -14,7 +14,7 @@
         },
         {
             "name": "Run Tests",
-            "shell_cmd": "make -C $project_path/build check",
+            "shell_cmd": "make -C $project_path/build all check",
         }
     ]
 }

@@ -1,5 +1,6 @@
 
 #include <openzwave/Manager.h>
+#include <openzwave/platform/Log.h>
 #include "process_notification.h"
 #include "node_value.h"
 #include "mqtt.h"
@@ -7,37 +8,37 @@
 
 using namespace OpenZWave;
 
-uint32_t home_id;
+uint32_t home_id = 0;
 bool publishing = false;
 
 void
 process_notification(const Notification* n, void* ctx)
 {
+    uint32_t hid = n->GetHomeId();
+    uint8_t nid = n->GetNodeId();
     options *opts = static_cast<options*> (ctx);
 
     switch(n->GetType()) {
         case Notification::Type_DriverReady:
         {
-            printf("HomeID is %x\n", n->GetHomeId());
             break;
         }
 
         case Notification::Type_DriverFailed:
         {
-            printf("Failed to initialize OpenZWave.\n");
             exit(1);
             break;
         }
 
         case Notification::Type_NodeAdded:
         {
-            node_add(n->GetHomeId(), n->GetNodeId());
+            node_add(hid, nid);
             break;
         }
 
         case Notification::Type_NodeRemoved:
         {
-            node_remove_by_id(n->GetNodeId());
+            node_remove_by_id(nid);
             break;
         }
 
@@ -76,7 +77,8 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_NodeQueriesComplete:
         {
-            printf("Driver ready. Start publishing changed values to MQTT\n");
+            Log::Write(LogLevel_Info, nid, "Driver ready. Start publishing changed values to MQTT");
+            home_id = hid;
             publishing = true;
             break;
         }

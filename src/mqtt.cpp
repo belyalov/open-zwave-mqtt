@@ -3,10 +3,12 @@
 #include <mosquitto.h>
 #include <algorithm>
 #include <openzwave/Manager.h>
+#include <openzwave/platform/Log.h>
 #include "mqtt.h"
 #include "command_classes.h"
 
 using namespace std;
+using namespace OpenZWave;
 
 // mapping between string and actual openzwave value
 map<string, const OpenZWave::ValueID> endpoints;
@@ -39,7 +41,7 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
     auto it = endpoints.find(msg->topic);
     if (it == endpoints.end()) {
         // Topic not found
-        printf("Topic not found '%s'\n", msg->topic);
+        Log::Write(LogLevel_Error, "MQTT: Topic not found '%s'", msg->topic);
         return;
     }
     const OpenZWave::ValueID& v = it->second;
@@ -71,10 +73,10 @@ mqtt_connect(const string& client_id, const string& host, const uint16_t port)
     // Connect to broker
     int res = mosquitto_connect(mqtt_client, host.c_str(), port, 60);
     if (res != 0) {
-        printf("Unable to connect to MQTT broker\n");
+        Log::Write(LogLevel_Error, "MQTT: Unable to connect to broker.");
         exit(1);
     }
-    printf("Connected!\n");
+    Log::Write(LogLevel_Info, "MQTT: Connected to broker.");
 }
 
 void mqtt_loop()
@@ -82,7 +84,7 @@ void mqtt_loop()
     while (1) {
         int res = mosquitto_loop(mqtt_client, -1, 1);
         if(res){
-            printf("connection lost, reconnecting.\n");
+            Log::Write(LogLevel_Error, "MQTT: connection to broker lost, reconnecting...");
             sleep(1);
             mosquitto_reconnect(mqtt_client);
         }
@@ -135,7 +137,7 @@ mqtt_publish(const string& prefix, const OpenZWave::ValueID& v)
     string value;
 
     if (!OpenZWave::Manager::Get()->GetValueAsString(v, &value)) {
-        printf("GetValueAsString failed\n");
+        Log::Write(LogLevel_Error, v.GetNodeId(), "GetValueAsString() failed.");
         return;
     }
 
@@ -149,19 +151,21 @@ mqtt_publish(const string& prefix, const OpenZWave::ValueID& v)
     int res = mosquitto_publish(mqtt_client, NULL, topics.first.c_str(),
             value.size(), value.c_str(), 0, true);
     if (res != 0) {
-        printf("Error while publishing message to MQTT topic %s\n", topics.first.c_str());
+        Log::Write(LogLevel_Error, v.GetNodeId(),
+            "Error while publishing message to MQTT topic '%s'", topics.first.c_str());
     } else {
-        // syslog here
-        // printf("PUBLISH: %s -> %s\n", topics.first.c_str(), value.c_str());
+        Log::Write(LogLevel_Debug, v.GetNodeId(), "MQTT PUBLISH: %s -> %s",
+            topics.first.c_str(), value.c_str());
     }
 
     res = mosquitto_publish(mqtt_client, NULL, topics.second.c_str(),
             value.size(), value.c_str(), 0, true);
     if (res != 0) {
-        printf("Error while publishing message to MQTT topic %s\n", topics.second.c_str());
+        Log::Write(LogLevel_Error, v.GetNodeId(),
+            "Error while publishing message to MQTT topic '%s'", topics.second.c_str());
     } else {
-        // syslog ?
-        // printf("PUBLISH: %s -> %s\n", topics.second.c_str(), value.c_str());
+        Log::Write(LogLevel_Debug, v.GetNodeId(), "MQTT PUBLISH: %s -> %s",
+            topics.second.c_str(), value.c_str());
     }
 }
 

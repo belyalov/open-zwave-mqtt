@@ -1,6 +1,7 @@
 
 #include <set>
 #include <openzwave/Manager.h>
+#include <openzwave/platform/Log.h>
 #include "mock_manager.h"
 
 using namespace OpenZWave;
@@ -172,3 +173,15 @@ mock_manager_cleanup()
 
     Manager::Destroy();
 }
+
+// Log:: mocks
+void
+Log::Write(LogLevel _level, const uint8_t _nodeId, const char* _format, ... )
+{
+}
+
+void
+Log::Write(LogLevel _level, const char* _format, ... )
+{
+}
+
