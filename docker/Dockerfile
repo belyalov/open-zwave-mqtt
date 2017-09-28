@@ -7,7 +7,10 @@ MAINTAINER "Konstantin Belyalov"
 RUN apt-get -qq update && \
     apt-get install -y gcc g++ libudev-dev libmosquitto-dev git make cmake && \
     git clone https://github.com/OpenZWave/open-zwave.git && \
-    make -C open-zwave install && \
+    cd open-zwave && \
+    git checkout V1.5 && \
+    make install && \
+    cd .. && \
     git clone https://github.com/belyalov/open-zwave-mqtt.git && \
     cd open-zwave-mqtt && \
     cmake . && \
