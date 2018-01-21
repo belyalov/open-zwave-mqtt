@@ -1,15 +1,20 @@
 # open-zwave-mqtt [![Build Status](https://travis-ci.org/belyalov/open-zwave-mqtt.svg?branch=master)](https://travis-ci.org/belyalov/open-zwave-mqtt)
 A bridge between ZWave and MQTT networks.
+
 A lot of work needs to be done, so your contributions are warmly welcomed! :)
 
 ## Quick start
 If you're running linux the simplest way to start by using **docker** container:
-`docker run --rm -ti --device=<your_zwave_device> -e "DEVICE=<your_zwave_device>" arsenicus/open-zwave-mqtt`
+```
+docker run --rm -ti --device=<your_zwave_device> -e "DEVICE=<your_zwave_device>" arsenicus/open-zwave-mqtt
+```
+
 Some explanations:
 * `--rm` - auto delete container after it finished.
 * `-ti` - **t** - terminal, **i** - interactive, i.e. run container in interactive terminal mode.
 * `--device` - Allow container to use specified device
 * `-e`  - Define environment variable
+
 After run you'll see something like:
 ```
 $ docker run --rm -ti -e --device=/dev/zzz "DEVICE=/dev/zzz" arsenicus/open-zwave-mqtt
@@ -54,9 +59,14 @@ Run test to be sure that it works on your setup / platform:
 ```
 
 ## Run
-`./ozw-mqtt -d <ZWave device> -h <MQTT HOST>`
+```
+./ozw-mqtt -d <ZWave device> -h <MQTT HOST>
+```
 E.g.:
-`./ozw-mqtt -d /dev/zwave -h 192.168.1.1`
+```
+./ozw-mqtt -d /dev/zwave -h 192.168.1.1
+```
+
 Now all your ZWave messages are replicated into MQTT network, e.g. let's say you have motion sensor named `motion` located at `living_room`, i.e. openzwave config entry may looks like:
 ```
 <Node id="4" name="motion" location="living" .... >
