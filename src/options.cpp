@@ -16,18 +16,18 @@ void print_help()
     printf("\n");
     printf("Common options:\n");
     printf("\t -d [--device]\t\t ZWave Device (default /dev/zwave)\n");
-    printf("\t -c [--config]\t\t User configuration for OpenZWave library (default /usr/local/etc/openzwave)\n");
+    printf("\t -c [--config]\t\t User configuration for OpenZWave library (default ./)\n");
     printf("\t -h [--mqtt-host]\t MQTT Broker host to connect to (default localhost)\n");
     printf("\t -u [--mqtt-user]\t MQTT Username (default empty)\n");
     printf("\t -p [--mqtt-passwd]\t MQTT Password (default empty)\n");
     printf("\n");
     printf("Other options:\n");
-    printf("\t --mqtt-port\t MQTT Broker port (default 1883)\n");
+    printf("\t --mqtt-port\t\t MQTT Broker port (default 1883)\n");
     printf("\t --mqtt-client-id\t MQTT Client-ID (default ozw-mqtt)\n");
-    printf("\t --mqtt-prefix\t Add prefix to all ZWave subscriptions / publications (default empty)\n");
-    printf("\t --system-config\t\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
-    printf("\t --log-level\t\t Set log level (error, warninig, info, debug) (default info)\n");
-    printf("\t --help\t\t Print this message\n");
+    printf("\t --mqtt-prefix\t\t Add prefix to all ZWave subscriptions / publications (default empty)\n");
+    printf("\t --system-config\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
+    printf("\t --log-level\t\t Set log level (error, warning, info, debug) (default info)\n");
+    printf("\t --help\t\t\t Print this message\n");
     printf("\n");
 }
 
