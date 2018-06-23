@@ -4,6 +4,7 @@
 #include "process_notification.h"
 #include "node_value.h"
 #include "mqtt.h"
+#include "polling.h"
 #include "options.h"
 
 using namespace OpenZWave;
@@ -64,6 +65,8 @@ process_notification(const Notification* n, void* ctx)
         case Notification::Type_ValueChanged:
         {
             if (publishing) {
+                // check / disable value polling
+                polling_disable(n->GetValueID());
                 mqtt_publish(opts->mqtt_prefix, n->GetValueID());
             }
             break;

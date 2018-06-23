@@ -69,6 +69,9 @@ int main(int argc, const char* argv[])
     Manager::Get()->AddWatcher(process_notification, &opt);
     // Add a Z-Wave Driver
     Manager::Get()->AddDriver(opt.device);
+    // Default poll interval is 2s.
+    // NOTE: only devices explicitly enabled for polling will be polled.
+    Manager::Get()->SetPollInterval(500, true);
 
     // Register save config mqtt topic
     mqtt_subscribe(opt.mqtt_prefix, "ozw/save_config", save_config);

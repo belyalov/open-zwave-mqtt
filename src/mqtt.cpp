@@ -6,6 +6,7 @@
 #include <openzwave/platform/Log.h>
 #include "mqtt.h"
 #include "command_classes.h"
+#include "polling.h"
 
 using namespace std;
 using namespace OpenZWave;
@@ -46,6 +47,7 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
     }
     const OpenZWave::ValueID& v = it->second;
 
+
     if (v.GetType() == OpenZWave::ValueID::ValueType::ValueType_Button) {
         // Buttons requires dedicated support
         transform(value.begin(), value.end(), value.begin(), ::tolower);
@@ -57,6 +59,16 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
     } else {
         // Regular value
         OpenZWave::Manager::Get()->SetValue(v, value);
+    }
+
+    // Ad hoc fix for GE Dimmers:
+    // This is great series of dimmers with / without motion sensor,
+    // however it has terrible bug - it does not report light status when updated through ZWave.
+    // So this fix simply schedules 3 value POLL
+    auto n = node_find_by_id(v.GetNodeId());
+    // 26933 Smart Motion Dimmer
+    if (n && n->product_type == "0x494d" && n->product_id == "0x3034") {
+        polling_enable(v, 3);
     }
 }
 

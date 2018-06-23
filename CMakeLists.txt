@@ -15,6 +15,7 @@ set(SRCS
    ${SRC_DIR}/mqtt.cpp
    ${SRC_DIR}/process_notification.cpp
    ${SRC_DIR}/options.cpp
+   ${SRC_DIR}/polling.cpp
 )
 
 # Tests source files
@@ -25,6 +26,7 @@ set(SRCS_TESTS
    ${SRC_TEST_DIR}/test_node.cpp
    ${SRC_TEST_DIR}/test_options.cpp
    ${SRC_TEST_DIR}/test_value.cpp
+   ${SRC_TEST_DIR}/test_polling.cpp
 )
 
 set(CMAKE_MACOSX_RPATH 1)

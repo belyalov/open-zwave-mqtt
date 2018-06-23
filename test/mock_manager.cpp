@@ -12,6 +12,7 @@ map<uint8_t, string> node_new_locations;
 set<uint64_t> readonly_values;
 map<uint64_t, string> value_labels;
 vector<pair<uint64_t, string> > set_value_history;
+map<uint64_t, bool> value_pollings;
 
 // Blank constructor / destructor
 Manager::Manager(): m_notificationMutex((Mutex*) new int)
@@ -142,6 +143,36 @@ Manager::ReleaseButton(const ValueID& _id)
 {
     set_value_history.push_back(make_pair(_id.GetId(), ""));
     return true;
+}
+
+bool
+Manager::EnablePoll(const ValueID& _id, const uint8 _intensity)
+{
+    value_pollings[_id.GetId()] = true;
+    return true;
+}
+
+bool
+Manager::DisablePoll(const ValueID& _id)
+{
+    value_pollings[_id.GetId()] = false;
+    return true;
+}
+
+void
+Manager::SetPollIntensity(const ValueID& _id, uint8 _intensity)
+{
+}
+
+bool
+mock_manager_get_polling_state(const ValueID& _id)
+{
+    auto it = value_pollings.find(_id.GetId());
+
+    if (it != value_pollings.end()) {
+        return it->second;
+    }
+    return false;
 }
 
 void
