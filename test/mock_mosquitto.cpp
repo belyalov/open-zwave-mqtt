@@ -24,6 +24,12 @@ mosquitto_connect(struct mosquitto *mosq, const char *host, int port, int keepal
     return 0;
 }
 
+int
+mosquitto_username_pw_set(struct mosquitto *mosq, const char *user, const char *passwd)
+{
+    return 0;
+}
+
 void mosquitto_message_callback_set(struct mosquitto *mosq,
         void (*on_message)(struct mosquitto *, void *, const struct mosquitto_message *))
 {
