@@ -7,7 +7,7 @@
 // Callback function for custom topics
 typedef void (*mqtt_custom_topic_callback)(const std::string& value);
 
-void mqtt_connect(const std::string&, const std::string&, const uint16_t port);
+void mqtt_connect(const std::string&, const std::string&, const uint16_t port, const std::string& user, const std::string& passwd);
 void mqtt_loop();
 
 // Subscription to OZW value

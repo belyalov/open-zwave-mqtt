@@ -51,7 +51,7 @@ int main(int argc, const char* argv[])
 
     // Make a connection to MQTT broker
     printf("Connecting to MQTT Broker %s:%d...", opt.mqtt_host.c_str(), opt.mqtt_port);
-    mqtt_connect(opt.mqtt_client_id, opt.mqtt_host, opt.mqtt_port);
+    mqtt_connect(opt.mqtt_client_id, opt.mqtt_host, opt.mqtt_port, opt.mqtt_user, opt.mqtt_passwd);
 
     // Create the OpenZWave Manager.
     // The first argument is the path to the config files (where the manufacturer_specific.xml file is located

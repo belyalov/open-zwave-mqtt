@@ -74,12 +74,14 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
 
 // Create MQTT client connect
 void
-mqtt_connect(const string& client_id, const string& host, const uint16_t port)
+mqtt_connect(const string& client_id, const string& host, const uint16_t port, const string& user, const string& passwd)
 {
     // Init MQTT library - mosquitto
     mosquitto_lib_init();
     // Create MQTT client: id - openzwave, clean session
     mqtt_client = mosquitto_new(client_id.c_str(), true, 0);
+    // Set user details
+    mosquitto_username_pw_set(mqtt_client, user.c_str(), passwd.c_str());
     // Set message callback
     mosquitto_message_callback_set(mqtt_client, mqtt_message_callback);
     // Connect to broker
