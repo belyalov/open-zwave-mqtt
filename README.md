@@ -34,9 +34,8 @@ Connecting to MQTT Broker test.mosquitto.org:1883...
 * CMake 2.8+
 * [OpenZwave library 1.5+](https://github.com/OpenZWave/open-zwave)
 * [Mosquitto (MQTT) library](https://github.com/eclipse/mosquitto)
-* GCC 4.8+ or CLang
-
-To continue please be sure to install libraries mentioned above.
+* [Gtest](https://github.com/google/googletest) - [optional] to be able to run tests
+* GCC 4.8+ or CLang 3.8+
 
 ### Compile
 Clone repository:
@@ -94,6 +93,5 @@ Whenever sensor detects movement a MQTT message will be sent to topic `living/mo
 * `--mqtt-prefix` - Add prefix to all ZWave subscriptions / publications topics. E.g. `living/motion/sensor_binary/sensor` will be prefixed to `<prefix>/living/motion/sensor_binary/sensor`. Defaults to no prefix.
 * `--system-config` - OpenZWave library system configuration dir (defaults to `/usr/local/etc/openzwave`)
 * `--log-level` - Set OpenZWave library log level (can be `error`, `warning`, `info`, `debug`). Defaults to `info`.
-
------
-More documentation coming soon (or you can add it yourself, which is very appreciated :)
+* `--mqtt-no-name-topics` - Disables subscribe / publish to name-based topics (like `home/room/light`)
+* `--mqtt-no-id-topics` - Disables subscribe / publish on id-based topics (like `1/2/33`).

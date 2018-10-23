@@ -46,7 +46,7 @@ process_notification(const Notification* n, void* ctx)
         case Notification::Type_ValueAdded:
         {
             value_add(n->GetValueID());
-            mqtt_subscribe(opts->mqtt_prefix, n->GetValueID());
+            mqtt_subscribe(opts, n->GetValueID());
             break;
         }
 
@@ -67,7 +67,7 @@ process_notification(const Notification* n, void* ctx)
             if (publishing) {
                 // check / disable value polling
                 polling_disable(n->GetValueID());
-                mqtt_publish(opts->mqtt_prefix, n->GetValueID());
+                mqtt_publish(opts, n->GetValueID());
             }
             break;
         }

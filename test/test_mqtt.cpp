@@ -75,6 +75,9 @@ protected:
             ASSERT_EQ(val, topic_payload.find(topic)->second);
         }
     }
+
+    // Dummy options
+    options opts = {};
 };
 
 
@@ -114,7 +117,7 @@ TEST_F(mqtt_tests, subscribe)
 
     // subscribe
     for (auto it = runs.begin(); it != runs.end(); ++it) {
-        mqtt_subscribe("", it->second);
+        mqtt_subscribe(&opts, it->second);
     }
 
     // check subscriptions
@@ -141,7 +144,7 @@ TEST_F(mqtt_tests, subscribe_escape_value_label)
     for (auto it = runs.begin(); it != runs.end(); ++it) {
         // Set mock label value
         mock_manager_set_value_label(it->second.first, it->second.second);
-        mqtt_subscribe("", it->second.first);
+        mqtt_subscribe(&opts, it->second.first);
     }
 
     // Check history
@@ -172,7 +175,7 @@ TEST_F(mqtt_tests, subscribe_readonly)
     // subscribe to read only values
     for (auto it = runs.begin(); it != runs.end(); ++it) {
         mock_manager_set_value_readonly(it->second);
-        mqtt_subscribe("", it->second);
+        mqtt_subscribe(&opts, it->second);
     }
 
     // there should be no subscriptions - all values are readonly
@@ -196,8 +199,9 @@ TEST_F(mqtt_tests, prefix)
     };
 
     // subscribe to read only values
+    opts.mqtt_prefix = "prefix";
     for (auto it = runs.begin(); it != runs.end(); ++it) {
-        mqtt_subscribe("prefix", it->second);
+        mqtt_subscribe(&opts, it->second);
     }
 
     // Check subscriptions
@@ -239,7 +243,7 @@ TEST_F(mqtt_tests, publish)
 
     // Publish values
     for (auto it = runs.begin(); it != runs.end(); ++it) {
-        mqtt_publish("", it->first);
+        mqtt_publish(&opts, it->first);
     }
 
     ASSERT_PUBLICATIONS(runs);
@@ -262,7 +266,7 @@ TEST_F(mqtt_tests, incoming_message)
     // add values / subscribe to them
     for (auto it = runs.begin(); it != runs.end(); ++it) {
         value_add(it->second);
-        mqtt_subscribe("", it->second);
+        mqtt_subscribe(&opts, it->second);
     }
 
     // Emulate mqtt message callback

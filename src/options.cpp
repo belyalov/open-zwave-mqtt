@@ -25,6 +25,8 @@ void print_help()
     printf("\t --mqtt-port\t\t MQTT Broker port (default 1883)\n");
     printf("\t --mqtt-client-id\t MQTT Client-ID (default ozw-mqtt)\n");
     printf("\t --mqtt-prefix\t\t Add prefix to all ZWave subscriptions / publications (default empty)\n");
+    printf("\t --mqtt-no-name-topics\t Do not subscribe/publish to name-based topics\n");
+    printf("\t --mqtt-no-id-topics\t Do not subscribe/publish to id-based topics\n");
     printf("\t --system-config\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
     printf("\t --log-level\t\t Set log level (error, warning, info, debug) (default info)\n");
     printf("\t --help\t\t\t Print this message\n");
@@ -38,6 +40,8 @@ options::options():
         mqtt_host("127.0.0.1"),
         mqtt_client_id("ozw-mqtt"),
         mqtt_port(1883),
+        mqtt_name_topics(true),
+        mqtt_id_topics(true),
         log_level(LogLevel_Info)
 {
 }
@@ -54,17 +58,23 @@ options::parse_argv(int argc, const char* argv[])
         if (k == "--help") {
             print_help();
             return false;
+        } else if (k == "--mqtt-no-name-topics") {
+            mqtt_name_topics = false;
+            continue;
+        } else if (k == "--mqtt-no-id-topics") {
+            mqtt_id_topics = false;
+            continue;
         }
 
         // next parameters requires value
         if (i + 1 >= argc) {
             // no value provided
-            printf("Value requred for '%s'\n", k.c_str());
+            printf("Value required for '%s'\n", k.c_str());
             return false;
         }
         string v = argv[++i];
         if (v.size() > 2 && v.substr(0, 2) == "--") {
-            printf("Value requred for '%s'\n", k.c_str());
+            printf("Value required for '%s'\n", k.c_str());
             return false;
         }
 
