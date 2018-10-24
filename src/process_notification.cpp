@@ -80,7 +80,6 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_NodeQueriesComplete:
         {
-            Log::Write(LogLevel_Info, nid, "Driver ready. Start publishing changed values to MQTT");
             home_id = hid;
             publishing = true;
             break;

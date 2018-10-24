@@ -74,7 +74,8 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
 
 // Create MQTT client connect
 void
-mqtt_connect(const string& client_id, const string& host, const uint16_t port, const string& user, const string& passwd)
+mqtt_connect(const string& client_id, const string& host, const uint16_t port,
+        const string& user, const string& passwd)
 {
     // Init MQTT library - mosquitto
     mosquitto_lib_init();
@@ -145,10 +146,20 @@ make_value_path(const string& prefix, const OpenZWave::ValueID& v)
     return make_pair(name_path, id_path);
 }
 
+void publish_impl(const string& topic, const string& value)
+{
+    int res = mosquitto_publish(mqtt_client, NULL, topic.c_str(),
+            value.size(), value.c_str(), 0, true);
+    if (res != 0) {
+        Log::Write(LogLevel_Error, "MQTT publish to '%s' FAILED (%d)", topic.c_str(), res);
+    } else {
+        Log::Write(LogLevel_Info, "MQTT PUBLISH: %s -> %s", topic.c_str(), value.c_str());
+    }
+}
+
 void
 mqtt_publish(const options* opts, const OpenZWave::ValueID& v)
 {
-    int res;
     string value;
 
     if (!OpenZWave::Manager::Get()->GetValueAsString(v, &value)) {
@@ -156,36 +167,47 @@ mqtt_publish(const options* opts, const OpenZWave::ValueID& v)
         return;
     }
 
-    // Publish value to MQTT
+    // Do not publish empty messages
     if (value.empty()) {
         return;
     }
 
+    // Make 2 topic variations:
+    // 1. Name based
+    // 2. ID based
     auto topics = make_value_path(opts->mqtt_prefix, v);
 
+    // If name/id topic found in the filter list - publish
+    // only to overridden destination
+    auto override = opts->topic_overrides.find(topics.first);
+    if (override != opts->topic_overrides.end()) {
+        publish_impl(override->second, value);
+        return;
+    }
+    override = opts->topic_overrides.find(topics.second);
+    if (override != opts->topic_overrides.end()) {
+        publish_impl(override->second, value);
+        return;
+    }
+
+    // Publish to auto-generated topic name(s)
     if (opts->mqtt_name_topics) {
-        res = mosquitto_publish(mqtt_client, NULL, topics.first.c_str(),
-                value.size(), value.c_str(), 0, true);
-        if (res != 0) {
-            Log::Write(LogLevel_Error, v.GetNodeId(),
-                "Error while publishing message to MQTT topic '%s'", topics.first.c_str());
-        } else {
-            Log::Write(LogLevel_Debug, v.GetNodeId(), "MQTT PUBLISH: %s -> %s",
-                topics.first.c_str(), value.c_str());
-        }
+        publish_impl(topics.first, value);
     }
 
     if (opts->mqtt_id_topics) {
-        res = mosquitto_publish(mqtt_client, NULL, topics.second.c_str(),
-                value.size(), value.c_str(), 0, true);
-        if (res != 0) {
-            Log::Write(LogLevel_Error, v.GetNodeId(),
-                "Error while publishing message to MQTT topic '%s'", topics.second.c_str());
-        } else {
-            Log::Write(LogLevel_Debug, v.GetNodeId(), "MQTT PUBLISH: %s -> %s",
-                topics.second.c_str(), value.c_str());
-        }
+        publish_impl(topics.second, value);
     }
+}
+
+void subscribe_impl(const string& topic, const OpenZWave::ValueID& v)
+{
+    string ep = topic + "/set";
+    int res = mosquitto_subscribe(mqtt_client, NULL, ep.c_str(), 0);
+    if (res != 0) {
+        throw runtime_error("mosquitto_subscribe() failed");
+    }
+    endpoints.insert(make_pair(ep, v));
 }
 
 void
@@ -197,26 +219,29 @@ mqtt_subscribe(const options* opts, const OpenZWave::ValueID& v)
     }
 
     // Make string representation of changeable parameter
-    auto paths = make_value_path(opts->mqtt_prefix, v);
+    auto topics = make_value_path(opts->mqtt_prefix, v);
+
+    // If name/id topic found in the filter list - publish
+    // only to overridden destination
+    auto override = opts->topic_overrides.find(topics.first);
+    if (override != opts->topic_overrides.end()) {
+        subscribe_impl(override->second, v);
+        return;
+    }
+    override = opts->topic_overrides.find(topics.second);
+    if (override != opts->topic_overrides.end()) {
+        subscribe_impl(override->second, v);
+        return;
+    }
 
     // Subscribe to name based topic, if enabled
     if (opts->mqtt_name_topics) {
-        string ep = paths.first + "/set";
-        int res = mosquitto_subscribe(mqtt_client, NULL, ep.c_str(), 0);
-        if (res != 0) {
-            throw runtime_error("mosquitto_subscribe failed");
-        }
-        endpoints.insert(make_pair(ep, v));
+        subscribe_impl(topics.first, v);
     }
 
     // Subscribe to id based topic, if enabled
     if (opts->mqtt_id_topics) {
-        string ep = paths.second + "/set";
-        int res = mosquitto_subscribe(mqtt_client, NULL, ep.c_str(), 0);
-        if (res != 0) {
-            throw runtime_error("mosquitto_subscribe failed");
-        }
-        endpoints.insert(make_pair(ep, v));
+        subscribe_impl(topics.second, v);
     }
 }
 

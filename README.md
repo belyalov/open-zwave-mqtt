@@ -79,6 +79,31 @@ Now all your ZWave messages are replicated into MQTT network, e.g. let's say you
 ```
 Whenever sensor detects movement a MQTT message will be sent to topic `living/motion/sensor_binary/sensor` with `True` or `False` string payload.
 
+## Topic Map
+By default application will publish **all** topics from your OpenZWave configuration. However, sometimes you may want to filter some topics our / rename them.
+That could be done by creating simple text file with mappings, like:
+```
+# Comments start with "#"
+
+# Master bedroom
+home/master/lights/alarm/burglar                    = home/master/motion
+home/master/lights/switch_multilevel/1/level        = home/master/lights
+home/master/wall_lights/switch_multilevel/1/level   = home/master/wall_lights
+home/master/window/sensor/battery/battery_level     = home/master/window/battery
+home/master/window/sensor/sensor_binary/sensor      = home/master/window/state
+
+# ^ empty lines are ignored. Spaces between topics are ignored too
+
+# You can just specify topic, without mapping, like:
+home/living/window1/sensor/battery/battery_level
+
+```
+Then simply run:
+```bash
+$ ./ozw-mqtt --topic-filter-file mytopiclist.txt
+```
+... And you'll see only topics defined in map! :-)
+
 ## Options
 #### Mandatory parameters
 * `-d [--device]` - ZWave Device location (defaults to `/dev/zwave`)
@@ -95,3 +120,4 @@ Whenever sensor detects movement a MQTT message will be sent to topic `living/mo
 * `--log-level` - Set OpenZWave library log level (can be `error`, `warning`, `info`, `debug`). Defaults to `info`.
 * `--mqtt-no-name-topics` - Disables subscribe / publish to name-based topics (like `home/room/light`)
 * `--mqtt-no-id-topics` - Disables subscribe / publish on id-based topics (like `1/2/33`).
+* `--topic-filter-file` - Specifies file contains topic map/filter.

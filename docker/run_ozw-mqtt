@@ -9,4 +9,5 @@
           --mqtt-prefix "$MQTT_PREFIX" \
           --mqtt-user "$MQTT_USER" \
           --mqtt-passwd "$MQTT_PASSWD" \
-          --log-level "$LOG_LEVEL"
+          --log-level "$LOG_LEVEL" \
+          --topic-filter-file "$TOPIC_FILTER_FILE"

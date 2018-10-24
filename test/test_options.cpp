@@ -1,3 +1,6 @@
+#include <iostream>
+#include <fstream>
+#include <unistd.h>
 
 #include <gtest/gtest.h>
 #include <openzwave/platform/Log.h>
@@ -20,12 +23,12 @@ TEST(options, full_names)
                           "--mqtt-prefix", "prefix",
                           "--mqtt_user", "junk",
                           "--mqtt-passwd", "secret",
-                          "--log-level", "debug"
+                          "--log-level", "debug",
+                          "--topic-filter-file", "1.txt",
                          };
 
     options opt;
-    bool res = opt.parse_argv(ARRAY_SIZE(argv), argv);
-    ASSERT_TRUE(res);
+    opt.parse_argv(ARRAY_SIZE(argv), argv);
     ASSERT_EQ("/dir/of/system/config", opt.system_config);
     ASSERT_EQ("./", opt.user_config);
     ASSERT_EQ("/dev/my_awesome_device", opt.device);
@@ -35,6 +38,7 @@ TEST(options, full_names)
     ASSERT_EQ("prefix", opt.mqtt_prefix);
     ASSERT_EQ("junk", opt.mqtt_user);
     ASSERT_EQ("secret", opt.mqtt_passwd);
+    ASSERT_EQ("1.txt", opt.topics_file);
     ASSERT_EQ(OpenZWave::LogLevel_Debug, opt.log_level);
 }
 
@@ -51,8 +55,7 @@ TEST(options, log_level)
     for (auto i = runs.begin(); i != runs.end(); ++i) {
         options opt;
         argv[2] = i->first.c_str();
-        bool res = opt.parse_argv(ARRAY_SIZE(argv), argv);
-        ASSERT_TRUE(res);
+        opt.parse_argv(ARRAY_SIZE(argv), argv);
         ASSERT_EQ(i->second, opt.log_level);
     }
 }
@@ -68,8 +71,7 @@ TEST(options, short_names)
                          };
 
     options opt;
-    bool res = opt.parse_argv(ARRAY_SIZE(argv), argv);
-    ASSERT_TRUE(res);
+    opt.parse_argv(ARRAY_SIZE(argv), argv);
     ASSERT_EQ("/dir/of/config", opt.user_config);
     ASSERT_EQ("/dev/my_awesome_device", opt.device);
     ASSERT_EQ("localhost", opt.mqtt_host);
@@ -82,8 +84,7 @@ TEST(options, invalid_options)
     const char* argv[] = {"exec_name", "-c", "/dir/of/config", "-Z", "fff"};
 
     options opt;
-    bool res = opt.parse_argv(ARRAY_SIZE(argv), argv);
-    ASSERT_FALSE(res);
+    ASSERT_THROW(opt.parse_argv(ARRAY_SIZE(argv), argv), param_error);
     ASSERT_EQ("/dir/of/config", opt.user_config);
 }
 
@@ -92,7 +93,31 @@ TEST(options, value_required)
     const char* argv[] = {"exec_name", "-c"};
 
     options opt;
-    bool res = opt.parse_argv(ARRAY_SIZE(argv), argv);
-    ASSERT_FALSE(res);
+    ASSERT_THROW(opt.parse_argv(ARRAY_SIZE(argv), argv), param_error);
 }
 
+TEST(options, topic_overrides)
+{
+    // Create temp file with 3 topics
+    ofstream f;
+    f.open("1.txt");
+    f << " # comment\n";
+    f << "\n";
+    f << "home/1/1=home/living\n";
+    f << "garage/1/1\n";
+    f << "hall/1    =   hall/lights\n";
+    f.close();
+
+    // Load / parse file
+    options opts;
+    opts.topics_file = "1.txt";
+    opts.parse_topics_file();
+
+    // Check result
+    ASSERT_EQ(3, opts.topic_overrides.size());
+    ASSERT_EQ(opts.topic_overrides["home/1/1"], "home/living");
+    ASSERT_EQ(opts.topic_overrides["hall/1"], "hall/lights");
+    ASSERT_EQ(opts.topic_overrides["garage/1/1"], "garage/1/1");
+
+    unlink("1.txt");
+}

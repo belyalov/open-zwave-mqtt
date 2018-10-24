@@ -1,5 +1,6 @@
 open-zwave-mqtt.sublime-workspace
 build
 build-ubuntu
-zwcfg_0xe4822929.xml
+zwcfg_*.xml
 options.xml
+OZW_Log.txt

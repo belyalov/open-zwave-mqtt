@@ -34,6 +34,7 @@ ENV DEVICE "/dev/zwave"
 ENV OZW_SYSTEM_CONFIG "/usr/local/etc/openzwave"
 ENV OZW_USER_CONFIG "/config"
 ENV LOG_LEVEL "info"
+ENV TOPIC_FILTER_FILE ""
 
 # User config (home config data)
 VOLUME /config

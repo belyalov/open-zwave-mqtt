@@ -124,6 +124,57 @@ TEST_F(mqtt_tests, subscribe)
     ASSERT_SUBSCRIPTIONS(runs);
 }
 
+TEST_F(mqtt_tests, subscribe_features_on_off)
+{
+    auto v1 = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v2 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+    auto v3 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+
+    // Enable only ID topics
+    opts.mqtt_name_topics = false;
+    opts.mqtt_id_topics   = true;
+    mqtt_subscribe(&opts, v1);
+
+    // Enable only name topics
+    opts.mqtt_name_topics = true;
+    opts.mqtt_id_topics   = false;
+    mqtt_subscribe(&opts, v2);
+
+    // Disable everything
+    opts.mqtt_name_topics = false;
+    opts.mqtt_id_topics   = false;
+    mqtt_subscribe(&opts, v3);
+
+    // Check subscription history
+    auto hist = mock_mosquitto_subscribe_history();
+    ASSERT_EQ(hist.size(), 2);
+    ASSERT_EQ(hist[0], "1/32/1/set");
+    ASSERT_EQ(hist[1], "location_h1_n2/name_h1_n2/meter/label1/set");
+}
+
+TEST_F(mqtt_tests, subscribe_with_topic_overrides)
+{
+    auto v1 = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v2 = ValueID(1, 2, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v3 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+
+    // Set up overrides for first 2 items
+    opts.topic_overrides["location_h1_n1/name_h1_n1/basic/label1"] = "home/test1";
+    opts.topic_overrides["2/32/1"] = "home/test2";
+
+    mqtt_subscribe(&opts, v1);
+    mqtt_subscribe(&opts, v2);
+    mqtt_subscribe(&opts, v3);
+
+    // Check subscription history
+    auto hist = mock_mosquitto_subscribe_history();
+    ASSERT_EQ(hist.size(), 4);
+    ASSERT_EQ(hist[0], "home/test1/set");
+    ASSERT_EQ(hist[1], "home/test2/set");
+    ASSERT_EQ(hist[2], "location_h1_n2/name_h1_n2/meter/label1/set");
+    ASSERT_EQ(hist[3], "2/50/1/set");
+}
+
 TEST_F(mqtt_tests, subscribe_escape_value_label)
 {
     // path: prefix/node_location/node_name/command_class_name
@@ -178,7 +229,7 @@ TEST_F(mqtt_tests, subscribe_readonly)
         mqtt_subscribe(&opts, it->second);
     }
 
-    // there should be no subscriptions - all values are readonly
+    // there should be no subscriptions - all values are read-only
     ASSERT_TRUE(mqtt_get_endpoints().empty());
 }
 
@@ -249,9 +300,62 @@ TEST_F(mqtt_tests, publish)
     ASSERT_PUBLICATIONS(runs);
 }
 
+TEST_F(mqtt_tests, publish_with_features_on_off)
+{
+    auto v1 = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v2 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+    auto v3 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+
+    // Enable only ID topics
+    opts.mqtt_name_topics = false;
+    opts.mqtt_id_topics   = true;
+    mqtt_publish(&opts, v1);
+
+    // Enable only name topics
+    opts.mqtt_name_topics = true;
+    opts.mqtt_id_topics   = false;
+    mqtt_publish(&opts, v2);
+
+    // Disable everything
+    opts.mqtt_name_topics = false;
+    opts.mqtt_id_topics   = false;
+    mqtt_publish(&opts, v3);
+
+    // Check publish history
+    auto hist = mock_mosquitto_publish_history();
+    ASSERT_EQ(hist.size(), 2);
+    ASSERT_EQ(hist[0].first, "1/32/1");
+    ASSERT_EQ(hist[1].first, "location_h1_n2/name_h1_n2/meter/label1");
+}
+
+TEST_F(mqtt_tests, publish_with_topic_overrides)
+{
+    auto v1 = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v2 = ValueID(1, 2, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Int);
+    auto v3 = ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int);
+    // Set up overrides for first 2 items
+    opts.topic_overrides["location_h1_n1/name_h1_n1/basic/label1"] = "home/test1";
+    opts.topic_overrides["2/32/1"] = "home/test2";
+
+    // Publish values
+    mqtt_publish(&opts, v1);
+    mqtt_publish(&opts, v2);
+    mqtt_publish(&opts, v3);
+
+    // Check publish history
+    auto hist = mock_mosquitto_publish_history();
+    ASSERT_EQ(hist.size(), 4);
+    ASSERT_EQ(hist[0].first, "home/test1");
+    ASSERT_EQ(hist[1].first, "home/test2");
+    ASSERT_EQ(hist[2].first, "location_h1_n2/name_h1_n2/meter/label1");
+    ASSERT_EQ(hist[3].first, "2/50/1");
+}
+
 TEST_F(mqtt_tests, incoming_message)
 {
-    // mqtt_message_callback(struct mosquitto*, void*, const struct mosquitto_message*);
+    // Create one more node - just to simplify
+    node_add(1, 3);
+
     map<pair<string, string>, const ValueID> runs = {
         {
             {"location_h1_n1/name_h1_n1/basic/label1/set", "1/32/1/set"},
@@ -261,7 +365,14 @@ TEST_F(mqtt_tests, incoming_message)
             {"location_h1_n2/name_h1_n2/meter/label1/set", "2/50/1/set"},
             ValueID(1, 2, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int)
         },
+        {
+            {"home/test1/set", "home/test1/set"},
+            ValueID(1, 3, ValueID::ValueGenre_User, 0x32, 1, 1, ValueID::ValueType_Int)
+        },
     };
+
+    // Enable topic override for node3
+    opts.topic_overrides["location_h1_n3/name_h1_n3/meter/label1"] = "home/test1";
 
     // add values / subscribe to them
     for (auto it = runs.begin(); it != runs.end(); ++it) {
@@ -277,7 +388,7 @@ TEST_F(mqtt_tests, incoming_message)
         m.payload = (void*) "1";
         m.payloadlen = 1;
         mqtt_message_callback(NULL, NULL, &m);
-        // second, named topic
+        // second, id topic (name for overridden)
         m.topic = (char*) it->first.second.c_str();
         m.payload = (void*) "2";
         m.payloadlen = 1;
