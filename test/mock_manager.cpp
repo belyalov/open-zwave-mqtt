@@ -132,6 +132,17 @@ Manager::SetValue(const ValueID& _id, const string& _value)
 }
 
 bool
+Manager::SetValue(const ValueID& _id, const bool _value)
+{
+    if (_value) {
+        set_value_history.push_back(make_pair(_id.GetId(), "True"));
+    } else {
+        set_value_history.push_back(make_pair(_id.GetId(), "False"));
+    }
+    return true;
+}
+
+bool
 Manager::PressButton(const ValueID& _id)
 {
     set_value_history.push_back(make_pair(_id.GetId(), ""));

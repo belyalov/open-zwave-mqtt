@@ -47,8 +47,9 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
     }
     const OpenZWave::ValueID& v = it->second;
 
-
-    if (v.GetType() == OpenZWave::ValueID::ValueType::ValueType_Button) {
+    // Handle value type
+    switch (v.GetType()) {
+    case ValueID::ValueType::ValueType_Button:
         // Buttons requires dedicated support
         transform(value.begin(), value.end(), value.begin(), ::tolower);
         if (value == "1" || value == "true" || value == "t") {
@@ -56,15 +57,27 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
         } else {
             OpenZWave::Manager::Get()->ReleaseButton(v);
         }
-    } else {
+        break;
+    case ValueID::ValueType::ValueType_Bool:
+        transform(value.begin(), value.end(), value.begin(), ::tolower);
+        if (value == "true") {
+            OpenZWave::Manager::Get()->SetValue(v, true);
+        } else if (value == "false") {
+            OpenZWave::Manager::Get()->SetValue(v, false);
+        } else {
+            // Support int values as well
+            OpenZWave::Manager::Get()->SetValue(v, atoi(value.c_str()) > 0);
+        }
+        break;
+    default:
         // Regular value
         OpenZWave::Manager::Get()->SetValue(v, value);
     }
 
     // Ad hoc fix for GE Dimmers:
     // This is great series of dimmers with / without motion sensor,
-    // however it has terrible bug - it does not report light status when updated through ZWave.
-    // So this fix simply schedules 3 value POLL
+    // however they have terrible bug - they don't report light status when updated through ZWave.
+    // So this fix simply schedules value to be polled by openzwave intentionally.
     auto n = node_find_by_id(v.GetNodeId());
     // 26933 Smart Motion Dimmer
     if (n && n->product_type == "0x494d" && n->product_id == "0x3034") {

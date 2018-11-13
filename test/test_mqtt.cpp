@@ -408,6 +408,44 @@ TEST_F(mqtt_tests, incoming_message)
     }
 }
 
+
+TEST_F(mqtt_tests, incoming_message_type_bool)
+{
+    // Create bool value and subscribe to it
+    auto val = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Bool);
+    value_add(val);
+    mqtt_subscribe(&opts, val);
+
+    // Prepare mqtt message
+    struct mosquitto_message m {};
+    m.topic = (char*) "location_h1_n1/name_h1_n1/basic/label1/set";
+
+    // Send various true/false values
+    m.payload = (void*) "0";
+    m.payloadlen = 1;
+    mqtt_message_callback(NULL, NULL, &m);
+
+    m.payload = (void*) "100";
+    mqtt_message_callback(NULL, NULL, &m);
+
+    m.payload = (void*) "true";
+    m.payloadlen = 4;
+    mqtt_message_callback(NULL, NULL, &m);
+
+    m.payload = (void*) "false";
+    m.payloadlen = 5;
+    mqtt_message_callback(NULL, NULL, &m);
+
+    // Check history
+    auto hist = mock_manager_get_value_set_history();
+    ASSERT_EQ(hist.size(), 4);
+
+    ASSERT_EQ(hist[0].second, "False");
+    ASSERT_EQ(hist[1].second, "True");
+    ASSERT_EQ(hist[2].second, "True");
+    ASSERT_EQ(hist[3].second, "False");
+}
+
 // Helper for custom subscriptions
 bool custom_called1 = false;
 bool custom_called2 = false;
