@@ -5,7 +5,6 @@
 #include "options.h"
 
 using namespace std;
-using namespace OpenZWave;
 
 
 void print_help()
@@ -44,7 +43,7 @@ options::options():
         mqtt_port(1883),
         mqtt_name_topics(true),
         mqtt_id_topics(true),
-        log_level(LogLevel_Info)
+        log_level(OpenZWave::LogLevel_Info)
 {
 }
 
@@ -100,10 +99,10 @@ options::parse_argv(int argc, const char* argv[])
             mqtt_passwd = v;
         } else if (k == "--log-level") {
             // error, warning, info, debug
-            if (v == "error") log_level = LogLevel_Error;
-            else if (v == "warning") log_level = LogLevel_Warning;
-            else if (v == "info") log_level = LogLevel_Info;
-            else if (v == "debug") log_level = LogLevel_Debug;
+            if (v == "error") log_level = OpenZWave::LogLevel_Error;
+            else if (v == "warning") log_level = OpenZWave::LogLevel_Warning;
+            else if (v == "info") log_level = OpenZWave::LogLevel_Info;
+            else if (v == "debug") log_level = OpenZWave::LogLevel_Debug;
             else {
                 throw param_error("Unknown log level", v);
             }

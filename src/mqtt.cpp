@@ -9,7 +9,6 @@
 #include "polling.h"
 
 using namespace std;
-using namespace OpenZWave;
 
 // mapping between string and actual openzwave value
 map<string, const OpenZWave::ValueID> endpoints;
@@ -42,14 +41,15 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
     auto it = endpoints.find(msg->topic);
     if (it == endpoints.end()) {
         // Topic not found
-        Log::Write(LogLevel_Error, "MQTT: Topic not found '%s'", msg->topic);
+        OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+            "MQTT: Topic not found '%s'", msg->topic);
         return;
     }
     const OpenZWave::ValueID& v = it->second;
 
     // Handle value type
     switch (v.GetType()) {
-    case ValueID::ValueType::ValueType_Button:
+    case OpenZWave::ValueID::ValueType::ValueType_Button:
         // Buttons requires dedicated support
         transform(value.begin(), value.end(), value.begin(), ::tolower);
         if (value == "1" || value == "true" || value == "t") {
@@ -58,7 +58,7 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
             OpenZWave::Manager::Get()->ReleaseButton(v);
         }
         break;
-    case ValueID::ValueType::ValueType_Bool:
+    case OpenZWave::ValueID::ValueType::ValueType_Bool:
         transform(value.begin(), value.end(), value.begin(), ::tolower);
         if (value == "true") {
             OpenZWave::Manager::Get()->SetValue(v, true);
@@ -101,10 +101,12 @@ mqtt_connect(const string& client_id, const string& host, const uint16_t port,
     // Connect to broker
     int res = mosquitto_connect(mqtt_client, host.c_str(), port, 60);
     if (res != 0) {
-        Log::Write(LogLevel_Error, "MQTT: Unable to connect to broker.");
+        OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+            "MQTT: Unable to connect to broker.");
         exit(1);
     }
-    Log::Write(LogLevel_Info, "MQTT: Connected to broker.");
+    OpenZWave::Log::Write(OpenZWave::LogLevel_Info,
+        "MQTT: Connected to broker.");
 }
 
 void mqtt_loop()
@@ -112,7 +114,8 @@ void mqtt_loop()
     while (1) {
         int res = mosquitto_loop(mqtt_client, -1, 1);
         if(res){
-            Log::Write(LogLevel_Error, "MQTT: connection to broker lost, reconnecting...");
+            OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+                "MQTT: connection to broker lost, reconnecting...");
             sleep(1);
             mosquitto_reconnect(mqtt_client);
         }
@@ -164,9 +167,11 @@ void publish_impl(const string& topic, const string& value)
     int res = mosquitto_publish(mqtt_client, NULL, topic.c_str(),
             value.size(), value.c_str(), 0, true);
     if (res != 0) {
-        Log::Write(LogLevel_Error, "MQTT publish to '%s' FAILED (%d)", topic.c_str(), res);
+        OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+            "MQTT publish to '%s' FAILED (%d)", topic.c_str(), res);
     } else {
-        Log::Write(LogLevel_Info, "MQTT PUBLISH: %s -> %s", topic.c_str(), value.c_str());
+        OpenZWave::Log::Write(OpenZWave::LogLevel_Info,
+            "MQTT PUBLISH: %s -> %s", topic.c_str(), value.c_str());
     }
 }
 
@@ -176,7 +181,8 @@ mqtt_publish(const options* opts, const OpenZWave::ValueID& v)
     string value;
 
     if (!OpenZWave::Manager::Get()->GetValueAsString(v, &value)) {
-        Log::Write(LogLevel_Error, v.GetNodeId(), "GetValueAsString() failed.");
+        OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+            v.GetNodeId(), "GetValueAsString() failed.");
         return;
     }
 
