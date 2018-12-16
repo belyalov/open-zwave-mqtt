@@ -14,18 +14,21 @@
 using namespace std;
 
 
-void
-signal_handler(int s)
-{
-    printf("Caught signal %d\n",s);
-    exit(1);
-}
-
+// Callback for MQTT save config topic
 void
 save_config(const string& value)
 {
     OpenZWave::Manager::Get()->WriteConfig(home_id);
     printf("OZW configuration saved.\n");
+}
+
+void
+signal_handler(int s)
+{
+    // Auto save config
+    save_config("");
+    printf("Caught signal %d\n",s);
+    exit(1);
 }
 
 //-----------------------------------------------------------------------------
