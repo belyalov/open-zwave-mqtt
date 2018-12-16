@@ -125,6 +125,14 @@ Manager::GetValueAsString(const ValueID& _id, string* o_value)
 }
 
 bool
+Manager::GetValueAsBool(const ValueID& _id, bool* o_value)
+{
+    *o_value = true;
+
+    return true;
+}
+
+bool
 Manager::SetValue(const ValueID& _id, const string& _value)
 {
     set_value_history.push_back(make_pair(_id.GetId(), _value));

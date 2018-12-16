@@ -351,6 +351,21 @@ TEST_F(mqtt_tests, publish_with_topic_overrides)
     ASSERT_EQ(hist[3].first, "2/50/1");
 }
 
+TEST_F(mqtt_tests, publish_bool_value)
+{
+    auto v1 = ValueID(1, 1, ValueID::ValueGenre_User, 0x20, 1, 1, ValueID::ValueType_Bool);
+
+    // Publish value
+    mqtt_publish(&opts, v1);
+
+    // Check publish history
+    auto hist = mock_mosquitto_publish_history();
+    ASSERT_GE(hist.size(), 1);
+    ASSERT_EQ(hist[0].first, "location_h1_n1/name_h1_n1/basic/label1");
+    // True -> 1
+    ASSERT_EQ(hist[0].second, "1");
+}
+
 TEST_F(mqtt_tests, incoming_message)
 {
     // Create one more node - just to simplify

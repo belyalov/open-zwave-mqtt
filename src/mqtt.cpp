@@ -49,7 +49,7 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
 
     // Handle value type
     switch (v.GetType()) {
-    case OpenZWave::ValueID::ValueType::ValueType_Button:
+    case OpenZWave::ValueID::ValueType_Button:
         // Buttons requires dedicated support
         transform(value.begin(), value.end(), value.begin(), ::tolower);
         if (value == "1" || value == "true" || value == "t") {
@@ -58,7 +58,7 @@ mqtt_message_callback(struct mosquitto* mosq, void* userdata, const struct mosqu
             OpenZWave::Manager::Get()->ReleaseButton(v);
         }
         break;
-    case OpenZWave::ValueID::ValueType::ValueType_Bool:
+    case OpenZWave::ValueID::ValueType_Bool:
         transform(value.begin(), value.end(), value.begin(), ::tolower);
         if (value == "true") {
             OpenZWave::Manager::Get()->SetValue(v, true);
@@ -184,6 +184,26 @@ mqtt_publish(const options* opts, const OpenZWave::ValueID& v)
         OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
             v.GetNodeId(), "GetValueAsString() failed.");
         return;
+    }
+
+    // By default GetValueAsString() for Boolean types returns
+    // True/False instead of 0/1 - which makes it difficult to
+    // process messages from switches (true/false) and dimmers (0-99)
+    // So convert this value type to 0/1
+    if (v.GetType() == OpenZWave::ValueID::ValueType_Bool) {
+        bool b;
+        if (!OpenZWave::Manager::Get()->GetValueAsBool(v, &b)) {
+            OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+                v.GetNodeId(), "GetValueAsBool() failed.");
+            return;
+        };
+        value = b ? "1" : "0";
+    } else {
+        if (!OpenZWave::Manager::Get()->GetValueAsString(v, &value)) {
+            OpenZWave::Log::Write(OpenZWave::LogLevel_Error,
+                v.GetNodeId(), "GetValueAsString() failed.");
+            return;
+        }
     }
 
     // Do not publish empty messages
