@@ -34,4 +34,9 @@ void                        value_remove(const OpenZWave::ValueID& v);
 
 std::string                 value_escape_label(const std::string&);
 
+std::pair<std::string, std::string>
+                            value_make_paths(const std::string& prefix, const OpenZWave::ValueID& v);
+
+void                        print_all_nodes();
+
 #endif

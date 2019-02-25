@@ -123,45 +123,6 @@ void mqtt_loop()
     }
 }
 
-
-// Make string from OpenZwave value
-pair<string, string>
-make_value_path(const string& prefix, const OpenZWave::ValueID& v)
-{
-    auto n = node_find_by_id(v.GetNodeId());
-    if (!n) {
-        throw invalid_argument("Node not found");
-    }
-
-    uint8_t cmd_class = v.GetCommandClassId();
-
-    // prefix/node_location/node_name/command_class_name
-    // prefix/node_id/command_class_id
-    string name_path;
-    string id_path;
-
-    if (!prefix.empty()) {
-        name_path += prefix + "/";
-        id_path += prefix + "/";
-    }
-    if (!n->location.empty()) {
-        name_path += n->location + "/";
-    }
-    name_path += n->name + "/" + command_class_str(cmd_class);
-    id_path += to_string(n->id) + "/" + to_string(cmd_class);
-
-    // Several command types support multi instances (e.g. 2-relay binary switch), so, add instance as well
-    // Today we've found only 2 types that support it: SWITCH_MULTILEVEL and SWITCH_BINARY
-    if (cmd_class == 0x25 || cmd_class == 0x26) {
-        name_path += "/" + to_string(v.GetInstance());
-        id_path += "/" + to_string(v.GetInstance());
-    }
-    name_path += "/" + value_escape_label(OpenZWave::Manager::Get()->GetValueLabel(v));
-    id_path += "/" + to_string(v.GetIndex());
-
-    return make_pair(name_path, id_path);
-}
-
 void publish_impl(const string& topic, const string& value)
 {
     int res = mosquitto_publish(mqtt_client, NULL, topic.c_str(),
@@ -214,7 +175,7 @@ mqtt_publish(const options* opts, const OpenZWave::ValueID& v)
     // Make 2 topic variations:
     // 1. Name based
     // 2. ID based
-    auto topics = make_value_path(opts->mqtt_prefix, v);
+    auto topics = value_make_paths(opts->mqtt_prefix, v);
 
     // If name/id topic found in the filter list - publish
     // only to overridden destination
@@ -258,7 +219,7 @@ mqtt_subscribe(const options* opts, const OpenZWave::ValueID& v)
     }
 
     // Make string representation of changeable parameter
-    auto topics = make_value_path(opts->mqtt_prefix, v);
+    auto topics = value_make_paths(opts->mqtt_prefix, v);
 
     // If name/id topic found in the filter list - publish
     // only to overridden destination

@@ -7,7 +7,7 @@
 class param_error: public std::exception {
     std::string msg;
 public:
-    const char * what () const throw () {
+    virtual const char* what() const noexcept {
         return msg.c_str();
     }
     param_error(const std::string& _msg, const std::string& _param) {
@@ -41,6 +41,8 @@ struct options {
     bool mqtt_id_topics;
     // Log level
     uint32_t log_level;
+    // Print topics only mode
+    bool print_topics_only;
 };
 
 void print_help();

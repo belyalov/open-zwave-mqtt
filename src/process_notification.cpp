@@ -46,7 +46,9 @@ process_notification(const Notification* n, void* ctx)
         case Notification::Type_ValueAdded:
         {
             value_add(n->GetValueID());
-            mqtt_subscribe(opts, n->GetValueID());
+            if (!opts->print_topics_only) {
+                mqtt_subscribe(opts, n->GetValueID());
+            }
             break;
         }
 
@@ -80,6 +82,11 @@ process_notification(const Notification* n, void* ctx)
 
         case Notification::Type_NodeQueriesComplete:
         {
+            // Print all MQTT topics and exit, when --print-topics-only
+            if (opts->print_topics_only) {
+                print_all_nodes();
+                exit(1);
+            }
             home_id = hid;
             publishing = true;
             break;

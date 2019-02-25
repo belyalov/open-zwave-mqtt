@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <openzwave/Manager.h>
 #include "node_value.h"
+#include "command_classes.h"
 
 using namespace std;
 
@@ -120,4 +121,59 @@ value_escape_label(const string& lbl)
     std::replace(res.begin(), res.end(), '+', '_');
 
     return res;
+}
+
+// Make string from OpenZwave value
+pair<string, string>
+value_make_paths(const string& prefix, const OpenZWave::ValueID& v)
+{
+    auto n = node_find_by_id(v.GetNodeId());
+    if (!n) {
+        throw invalid_argument("Node not found");
+    }
+
+    uint8_t cmd_class = v.GetCommandClassId();
+
+    // prefix/node_location/node_name/command_class_name
+    // prefix/node_id/command_class_id
+    string name_path;
+    string id_path;
+
+    if (!prefix.empty()) {
+        name_path += prefix + "/";
+        id_path += prefix + "/";
+    }
+    if (!n->location.empty()) {
+        name_path += n->location + "/";
+    }
+    name_path += n->name + "/" + command_class_str(cmd_class);
+    id_path += to_string(n->id) + "/" + to_string(cmd_class);
+
+    // Several command types support multi instances (e.g. 2-relay binary switch), so, add instance as well
+    // Today we've found only 2 types that support it: SWITCH_MULTILEVEL and SWITCH_BINARY
+    if (cmd_class == 0x25 || cmd_class == 0x26) {
+        name_path += "/" + to_string(v.GetInstance());
+        id_path += "/" + to_string(v.GetInstance());
+    }
+    name_path += "/" + value_escape_label(OpenZWave::Manager::Get()->GetValueLabel(v));
+    id_path += "/" + to_string(v.GetIndex());
+
+    return make_pair(name_path, id_path);
+}
+
+void
+print_all_nodes()
+{
+    printf("\n");
+    for (auto n = nodes_by_id.begin(); n != nodes_by_id.end(); ++n) {
+        for (auto v = n->second->values.begin(); v != n->second->values.end(); v++) {
+            string pref = "R";
+            if (!OpenZWave::Manager::Get()->IsValueReadOnly(*v)) {
+                pref += "/W";
+            }
+            auto names = value_make_paths("", *v);
+            printf("(%s) %s (%s)\n", pref.c_str(), names.first.c_str(), names.second.c_str());
+        }
+    }
+
 }

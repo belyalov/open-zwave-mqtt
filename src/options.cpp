@@ -30,6 +30,7 @@ void print_help()
     printf("\t --system-config\t OpenZWave library system config dir (default /usr/local/etc/openzwave)\n");
     printf("\t --topic-filter-file\t Publish only to topics from file separated by new line\n");
     printf("\t --log-level\t\t Set log level (error, warning, info, debug) (default info)\n");
+    printf("\t --print-topics-only\t Only print all available MQTT topics, then exit\n");
     printf("\t --help\t\t\t Print this message\n");
     printf("\n");
 }
@@ -43,7 +44,8 @@ options::options():
         mqtt_port(1883),
         mqtt_name_topics(true),
         mqtt_id_topics(true),
-        log_level(OpenZWave::LogLevel_Info)
+        log_level(OpenZWave::LogLevel_Info),
+        print_topics_only(false)
 {
 }
 
@@ -64,6 +66,11 @@ options::parse_argv(int argc, const char* argv[])
             continue;
         } else if (k == "--mqtt-no-id-topics") {
             mqtt_id_topics = false;
+            continue;
+        } else if (k == "--print-topics-only") {
+            print_topics_only = true;
+            // We don't want noise for this mode
+            log_level = OpenZWave::LogLevel_Fatal;
             continue;
         }
 
