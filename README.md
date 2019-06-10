@@ -52,9 +52,9 @@ This will take awhile (up to few minutes, depending on amount of nodes)...
 Cool, now we know how to get all information from ZWave network forwarded to MQTT, but what if you need it vise-versa?
 Simply add `/set` to the topic and it will be forwarded to ZWave network, e.g.:
 ```
-mosquitto_pub -t home/living_room/switch_multilevel/1/level/set -m 100
+mosquitto_pub -t home/living_room/switch_multilevel/1/level/set -m 90
 ```
-Will turn set your dimmer in living room to `100`. :~)
+This will living room dimmer level to `90` :~)
 
 ## Topic Map
 By default application will publish **all** topics from your OpenZWave configuration. However, sometimes you may want to filter some topics our / rename them.
