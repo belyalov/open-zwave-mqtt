@@ -22,6 +22,7 @@ set(SRCS
 set(SRCS_TESTS
    ${SRC_TEST_DIR}/mock_manager.cpp
    ${SRC_TEST_DIR}/mock_mosquitto.cpp
+   ${SRC_TEST_DIR}/mock_mutex.cpp
    ${SRC_TEST_DIR}/test_mqtt.cpp
    ${SRC_TEST_DIR}/test_node.cpp
    ${SRC_TEST_DIR}/test_options.cpp

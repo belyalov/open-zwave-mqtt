@@ -15,7 +15,7 @@ vector<pair<uint64_t, string> > set_value_history;
 map<uint64_t, bool> value_pollings;
 
 // Blank constructor / destructor
-Manager::Manager(): m_notificationMutex((Mutex*) new int)
+Manager::Manager(): m_notificationMutex(new Internal::Platform::Mutex())
 {
 }
 
@@ -102,7 +102,7 @@ Manager::GetNodeProductType(const uint32_t hid, const uint8_t nid)
 }
 
 string
-Manager::GetValueLabel(const OpenZWave::ValueID& v)
+Manager::GetValueLabel(const OpenZWave::ValueID& v, int32 _pos)
 {
     if (value_labels.find(v.GetId()) != value_labels.end()) {
         return value_labels[v.GetId()];
