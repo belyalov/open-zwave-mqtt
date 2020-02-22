@@ -57,7 +57,7 @@ mosquitto_pub -t home/living_room/switch_multilevel/1/level/set -m 90
 This will living room dimmer level to `90` :~)
 
 ## Topic Map
-By default application will publish **all** topics from your OpenZWave configuration. However, sometimes you may want to filter some topics our / rename them.
+By default application will publish **all** topics from your OpenZWave configuration. However, sometimes you may want to filter some topics out / rename them.
 That could be done by creating simple text file with mappings, like:
 ```
 # Comments start with "#"
